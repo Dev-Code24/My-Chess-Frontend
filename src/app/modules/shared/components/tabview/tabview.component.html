@@ -1,0 +1,44 @@
+<div class="tabview flex flex-col gap-2 h-full">
+  <div #headerWrapper class="tab-headers relative border border-gray-200 flex justify-evenly items-center {{ tabBackgroundColor() }} rounded-md">
+    <!-- Sliding Indicator -->
+    <div
+      class="absolute {{ tabHighlightColor() }} rounded-md z-[1]"
+      [class.transition-all]="indicator().ready"
+      [class.duration-300]="indicator().ready"
+      [class.ease-in-out]="indicator().ready"
+      [class.opacity-0]="!indicator().ready"
+      [style.left.px]="indicator().left"
+      [style.top.px]="indicator().top"
+      [style.width.px]="indicator().width"
+      [style.height.px]="indicator().height">
+    </div>
+    <!-- Tabs -->
+    @for (header of tabHeaders; track $index) {
+      <div
+        #tabRef
+        class="flex justify-center items-center z-10 w-full py-3 cursor-pointer {{ tabHeight() }} relative"
+        (click)="tabChange($index)"
+        >
+        <span
+          class="transition-all duration-200 ease-in-out text-center text-black select-none"
+          [class.font-semibold]="$index === activeIndex()"
+          [class.font-normal]="$index !== activeIndex()">
+          {{ header }}
+        </span>
+        <!-- Divider -->
+        @if (!$last) {
+          <div
+            class="absolute bg-gray-200 w-[2px]"
+            [style.height.px]="indicator().height"
+            [style.top.px]="indicator().top"
+            [style.right.px]="0">
+          </div>
+        }
+      </div>
+    }
+  </div>
+  <!-- Tab Content -->
+  <div class="tab-content p-4 h-full border border-gray-200 rounded-md">
+    <ng-content></ng-content>
+  </div>
+</div>
