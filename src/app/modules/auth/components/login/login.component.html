@@ -1,0 +1,35 @@
+<div class="login-container flex flex-col gap-4 h-full">
+  <div class="login-title w-full flex justify-center items-center text-black font-bold text-xl"><span>{{ CONSTANTS.TITLE }}</span></div>
+  <div class="login-form h-full">
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="flex flex-col justify-between h-full gap-4">
+      <div class="input-fields">
+        <div class="flex flex-col gap-1 mb-[0.65rem]">
+          <label for="login-email">Email:</label>
+          <input class="{{ inputStyle.join(' ') }}" required formControlName="email" type="text" name="login-email" id="login-email" [placeholder]="CONSTANTS.EMAIL_PLACEHOLDER">
+        </div>
+        <div class="flex flex-col gap-1">
+          <label for="login-password">Password</label>
+          <div class="flex relative">
+            <input class="{{ inputStyle.join(' ') }}" required formControlName="password" [type]="passwordInputType()" name="login-password" id="login-password"
+            [placeholder]="CONSTANTS.PASSWORD_PLACEHOLDER">
+            <span
+              class="transition-colors duration-300 ease-out p-1 rounded-[50%] absolute right-[0.25rem] top-[0.25rem] cursor-pointer w-[32px] flex justify-center items-center
+              bg-sky-50 hover:bg-sky-200"
+              (click)="togglePassword()">
+              <fa-icon [icon]="previewIcon()" />
+            </span>
+          </div>
+        </div>
+      </div>
+      <div class="w-full flex justify-center items-center">
+        <button
+          class="w-full p-4 rounded-sm font-bold"
+          type="button"
+          [ngClass]="loginForm.valid ? CONSTANTS.bg.SKY_200 : 'bg-gray-200'"
+          [disabled]="loginForm.valid">
+            {{ CONSTANTS.SUBMIT }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
