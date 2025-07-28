@@ -25,7 +25,9 @@
         <button
           class="w-full p-4 rounded-sm font-bold"
           type="button"
-          [ngClass]="loginForm.valid ? CONSTANTS.bg.SKY_200 : 'bg-gray-200'"
+          [ngClass]="[
+            loginForm.valid ? `${CONSTANTS.bg.SKY_200}` : 'bg-gray-200 cursor-not-allowed',
+            ]"
           [disabled]="loginForm.valid">
             {{ CONSTANTS.SUBMIT }}
         </button>
