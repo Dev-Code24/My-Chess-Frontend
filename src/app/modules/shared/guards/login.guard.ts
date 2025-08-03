@@ -9,7 +9,7 @@ export const loginGuard: CanActivateFn = (route, state) => {
 
   return stateManagerService.user$.pipe(
     map((state) => {
-      if (state.isLoggedIn) return router.createUrlTree(['/play']);
+      if (state.isLoggedIn) return router.createUrlTree(['/home']);
       else return true;
     })
   )

@@ -4,9 +4,9 @@ import { TabViewComponent, TabViewPanelComponent } from "@shared/components/tabv
 import { LoginComponent } from "../login/login.component";
 import { SignUpComponent } from "../sign-up/sign-up.component";
 
-import { AUTH } from '../../@constants/constants';
+import { AUTH } from '../../@utils/constants';
 import { Router } from '@angular/router';
-import { COLORS } from '@shared/utils/constants';
+import { COLORS } from '@shared/@utils/constants';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { MyChessLogoComponent } from "@shared/components/my-chess-logo/my-chess-logo.component";
 import { AuthForm } from 'modules/auth/@interface/interface';

@@ -1,7 +1,7 @@
 import { Component, ContentChildren, ElementRef, input, QueryList, ViewChild, ViewChildren, AfterViewInit, OnDestroy, effect, signal, output } from '@angular/core';
 import { Subject, takeUntil } from 'rxjs';
 
-import { SubSink } from '@shared/utils/subsink.service';
+import { SubSink } from '@shared/@utils/Subsink';
 import { TabViewPanelComponent } from './tabview-panel/tabview-panel.component';
 
 @Component({

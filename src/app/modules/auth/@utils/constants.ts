@@ -15,3 +15,5 @@ export const SIGN_UP = {
   TITLE: 'Create a new account',
   CONFIRM_PASSWORD_PLACEHOLDER: 'Enter your password'
 }
+
+export const JWT_TOKEN_STORAGE_KEY = 'MY_CHESS_COOKIE'

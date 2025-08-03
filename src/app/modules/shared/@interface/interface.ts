@@ -1,4 +1,4 @@
 export interface UserInterface {
   isLoggedIn: boolean;
-  cookie: string | null;
+  details: { name: string; email: string; } | null;
 }
