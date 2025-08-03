@@ -14,7 +14,7 @@
             [placeholder]="CONSTANTS.PASSWORD_PLACEHOLDER">
             <span
               class="transition-colors duration-300 ease-out p-1 rounded-[50%] absolute right-[0.25rem] top-[0.25rem] cursor-pointer w-[32px] flex justify-center items-center
-              bg-sky-50 hover:bg-sky-200"
+              bg-lime-50 hover:bg-lime-200"
               (click)="togglePassword()">
               <fa-icon [icon]="previewIcon()" />
             </span>
@@ -26,7 +26,7 @@
           class="w-full p-4 rounded-sm font-bold"
           type="button"
           [ngClass]="[
-            loginForm.valid ? `${CONSTANTS.bg.SKY_200}` : 'bg-gray-200 cursor-not-allowed',
+            loginForm.valid ? `${CONSTANTS.bg.bg_300}` : 'bg-lime-100 cursor-not-allowed',
             ]"
           [disabled]="loginForm.valid">
             {{ CONSTANTS.SUBMIT }}

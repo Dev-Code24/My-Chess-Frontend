@@ -4,8 +4,8 @@ import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Va
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 
 import { faEye, faEyeSlash } from '@fortawesome/free-regular-svg-icons';
-import { SIGN_UP } from '../../@constants/constants';
-import { COLORS } from '@shared/utils/constants';
+import { SIGN_UP } from '../../@utils/constants';
+import { COLORS } from '@shared/@utils/constants';
 import { AuthForm } from 'modules/auth/@interface/interface';
 
 @Component({
@@ -56,7 +56,7 @@ export class SignUpComponent {
   protected onSubmit(): void {
     if (this.signUpForm.valid) {
       const signUpFormObject: AuthForm = {
-            'formType': 'LOGIN'
+        'formType': 'LOGIN'
       };
       Object.entries(this.signUpForm.controls).forEach((field) => {
         const key = field[0], control = field[1];

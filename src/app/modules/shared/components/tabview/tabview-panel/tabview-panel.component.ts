@@ -8,7 +8,6 @@ import { Component, input } from '@angular/core';
       <ng-content></ng-content>
     }
   `,
-  styleUrl: './tabview-panel.component.scss'
 })
 
 export class TabViewPanelComponent {

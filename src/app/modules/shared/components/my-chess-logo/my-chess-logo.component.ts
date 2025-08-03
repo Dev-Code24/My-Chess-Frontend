@@ -1,18 +1,44 @@
-import { Component } from '@angular/core';
-
-import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
-import { faChessRook } from '@fortawesome/free-solid-svg-icons';
+import { Component, input } from '@angular/core';
+import { MyChessLogoIconComponent } from "./my-chess-logo-icon/my-chess-logo-icon.component";
+import { IconSize } from '@shared/@interface';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'MyChessLogo',
-  imports: [ FontAwesomeModule ],
+  standalone: true,
+  imports: [MyChessLogoIconComponent, CommonModule],
   template: `
-      <span class="relative pl-[2.5rem] text-sky-400">
-      <fa-icon class="absolute left-1 z-0" [icon]="chessIcon" />
-      <span class="relative z-0 pl-4">My Chess</span>
-    </span>
+    <div [ngClass]="[ getPaddings[0], 'text-lime-500', getSizeClass ]" >
+      <MyChessLogoIcon [size]="size()" />
+      <span class="relative z-0" [ngClass]="getPaddings[1]">My Chess</span>
+    </div>
   `
 })
 export class MyChessLogoComponent {
-  protected chessIcon = faChessRook;
+  public size = input<IconSize>('md');
+  public paddings = input<[string, string]>();
+
+  protected get getSizeClass(): string {
+    const map = {
+      sm: 'text-3xl',
+      md: 'text-5xl',
+      xl: 'text-6xl',
+    } as const;
+    return map[this.size()];
+  }
+
+  protected get getPaddings(): [string, string] {
+    const paddings = this.paddings();
+    if (paddings) {
+      return paddings;
+    }
+
+    const defaultPaddings: Record<'sm' | 'md' | 'xl', [string, string]> = {
+      sm: ['pl-[0.5rem]', 'pl-[1.8rem]'],
+      md: ['pl-[1.5rem]', 'pl-[3rem]'],
+      xl: ['pl-[2.5rem]', 'pl-[3.5rem]'],
+    };
+
+    return defaultPaddings[this.size()];
+  }
 }

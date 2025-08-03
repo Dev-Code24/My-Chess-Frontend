@@ -4,8 +4,8 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 
 import { faEye, faEyeSlash } from '@fortawesome/free-regular-svg-icons';
-import { LOGIN } from '../../@constants/constants';
-import { COLORS } from '@shared/utils/constants';
+import { LOGIN } from '../../@utils/constants';
+import { COLORS } from '@shared/@utils/constants';
 import { AuthForm } from './../../@interface/interface';
 
 @Component({
