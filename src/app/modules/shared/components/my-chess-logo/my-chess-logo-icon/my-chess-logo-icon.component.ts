@@ -8,7 +8,7 @@ import { IconSize } from '@shared/@interface';
 @Component({
   selector: 'MyChessLogoIcon',
   standalone: true,
-  imports: [FontAwesomeModule, CommonModule],
+  imports: [ FontAwesomeModule, CommonModule ],
   template: `
     <span [ngClass]="['relative', sizeClass]">
       <fa-icon [icon]="pawnChessIcon" class="absolute scale-80" [ngClass]="iconPositions[0]" />

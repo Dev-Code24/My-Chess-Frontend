@@ -8,7 +8,6 @@ import { TabViewPanelComponent } from './tabview-panel/tabview-panel.component';
   selector: 'mc-tabview',
   imports: [],
   templateUrl: './tabview.component.html',
-  styleUrl: './tabview.component.scss'
 })
 export class TabViewComponent implements AfterViewInit, OnDestroy {
   @ContentChildren(TabViewPanelComponent) panels!: QueryList<TabViewPanelComponent>;

@@ -12,7 +12,6 @@ import { AuthForm } from './../../@interface/interface';
   selector: 'mc-login',
   imports: [ CommonModule, ReactiveFormsModule, FontAwesomeModule],
   templateUrl: './login.component.html',
-  styleUrl: './login.component.scss'
 })
 export class LoginComponent {
   private formBuilder = inject(FormBuilder);

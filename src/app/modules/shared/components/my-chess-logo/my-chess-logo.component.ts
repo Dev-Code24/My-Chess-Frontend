@@ -6,11 +6,11 @@ import { CommonModule } from '@angular/common';
 @Component({
   selector: 'MyChessLogo',
   standalone: true,
-  imports: [MyChessLogoIconComponent, CommonModule],
+  imports: [ MyChessLogoIconComponent, CommonModule ],
   template: `
-    <div [ngClass]="[ getPaddings[0], 'text-lime-500', getSizeClass ]" >
+    <div [ngClass]="[ getPaddings[0], 'text-lime-500 ml-4 select-none', getSizeClass ]" >
       <MyChessLogoIcon [size]="size()" />
-      <span class="relative z-0" [ngClass]="getPaddings[1]">My Chess</span>
+      <span [ngClass]="getPaddings[1]">MyChess</span>
     </div>
   `
 })
@@ -34,9 +34,9 @@ export class MyChessLogoComponent {
     }
 
     const defaultPaddings: Record<'sm' | 'md' | 'xl', [string, string]> = {
-      sm: ['pl-[0.5rem]', 'pl-[1.8rem]'],
-      md: ['pl-[1.5rem]', 'pl-[3rem]'],
-      xl: ['pl-[2.5rem]', 'pl-[3.5rem]'],
+      sm: ['pl-[0.9rem]', 'pl-[1.8rem]'],
+      md: ['pl-[1.4rem]', 'pl-[3rem]'],
+      xl: ['pl-[1.8rem]', 'pl-[3.5rem]'],
     };
 
     return defaultPaddings[this.size()];

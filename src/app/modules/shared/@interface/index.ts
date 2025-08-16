@@ -1,2 +1,2 @@
 export type { UserInterface } from './interface';
-export type { IconSize } from './ui-interface';
+export type { SizeType as IconSize } from './ui-interface';

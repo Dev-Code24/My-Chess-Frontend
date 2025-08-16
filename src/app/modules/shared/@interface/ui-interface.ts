@@ -1,1 +1,1 @@
-export type IconSize = 'sm' | 'md' | 'xl';
+export type SizeType = 'sm' | 'md' | 'xl';
