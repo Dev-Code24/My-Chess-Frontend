@@ -3,12 +3,12 @@ import { Component, computed, inject } from '@angular/core';
 import { TabViewComponent, TabViewPanelComponent } from "@shared/components/tabview";
 import { LoginComponent } from "../login/login.component";
 import { SignUpComponent } from "../sign-up/sign-up.component";
+import { MyChessLogoComponent } from "@shared/components";
 
 import { AUTH } from '../../@utils/constants';
 import { Router } from '@angular/router';
 import { COLORS } from '@shared/@utils/constants';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
-import { MyChessLogoComponent } from "@shared/components/my-chess-logo/my-chess-logo.component";
 import { AuthForm } from 'modules/auth/@interface/interface';
 
 @Component({
@@ -17,7 +17,6 @@ import { AuthForm } from 'modules/auth/@interface/interface';
     TabViewComponent, TabViewPanelComponent, LoginComponent, SignUpComponent, FontAwesomeModule, MyChessLogoComponent
 ],
   templateUrl: './auth.component.html',
-  styleUrl: './auth.component.scss'
 })
 export class AuthComponent  {
   private router = inject(Router);

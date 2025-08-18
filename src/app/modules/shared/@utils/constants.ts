@@ -1,9 +1,9 @@
-import { UserInterface } from "@shared/@interface";
+import { UserInterface } from '@shared/@interface';
 
 export const DEFAULT_USER_DATA: UserInterface = {
-  isLoggedIn: true,
-  details: null,
-}
+  isLoggedIn: false,
+  details: null
+};
 
 export const COLORS = {
   bg: {
@@ -18,5 +18,5 @@ export const COLORS = {
     bg_800: 'bg-lime-800',
     bg_900: 'bg-lime-900',
     bg_950: 'bg-lime-950',
-  }
-}
+  },
+};

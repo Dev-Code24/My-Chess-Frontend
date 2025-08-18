@@ -12,7 +12,6 @@ import { AuthForm } from 'modules/auth/@interface/interface';
   selector: 'mc-signup',
   imports: [ CommonModule, FontAwesomeModule, ReactiveFormsModule ],
   templateUrl: './sign-up.component.html',
-  styleUrl: './sign-up.component.scss'
 })
 export class SignUpComponent {
   private formBuilder = inject(FormBuilder);
