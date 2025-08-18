@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, input, OnInit, signal } from '@angular/core';
-import { SizeType } from '@shared/@interface/ui-interface';
+import { IconSize } from '@shared/@interface';
 import { randomHSLGenerator } from '@shared/@utils/utils';
 
 @Component({
@@ -10,7 +10,7 @@ import { randomHSLGenerator } from '@shared/@utils/utils';
 })
 export class AvatarComponent implements OnInit {
   public label = input<string>();
-  public size = input<SizeType>('sm');
+  public size = input<IconSize>('sm');
 
   protected generatedHSL = signal<[string, string, string, string] | undefined>(undefined);
 

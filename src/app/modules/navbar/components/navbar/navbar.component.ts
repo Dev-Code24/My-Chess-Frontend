@@ -1,4 +1,4 @@
-import { Component, input, OnInit } from '@angular/core';
+import { Component, input } from '@angular/core';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 
 import { MyChessLogoComponent, AvatarComponent } from "@shared/components";
@@ -12,10 +12,8 @@ import { UserInterface } from '@shared/@interface';
   imports: [ FontAwesomeModule, MyChessLogoComponent, AvatarComponent ],
   templateUrl: './navbar.component.html',
 })
-export class NavbarComponent implements OnInit {
+export class NavbarComponent {
   public user = input.required<UserInterface>();
 
   protected loginIcon = faArrowRightToBracket;
-
-  public ngOnInit(): void { }
 }
