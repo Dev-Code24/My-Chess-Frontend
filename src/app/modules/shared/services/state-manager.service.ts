@@ -15,10 +15,7 @@ export class StateManagerService {
 
   /* USER STATE METHODS */
   public getUser(): UserInterface { return this.userSubject.value; }
-  public updateUser(updatedUserField: Partial<UserInterface>): void {
-    const currentUser = this.getUser();
-    this.userSubject.next({ ...currentUser , ...updatedUserField });
-  }
+  public updateUser(updatedUserField: UserInterface): void { this.userSubject.next(updatedUserField); }
   public resetUser(): void { this.userSubject.next(DEFAULT_USER_DATA); }
 
 }

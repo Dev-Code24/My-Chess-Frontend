@@ -14,16 +14,16 @@ export class TabViewComponent implements AfterViewInit, OnDestroy {
   @ViewChildren('tabRef') tabRefs!: QueryList<ElementRef>;
   @ViewChild('headerWrapper') headerWrapper!: ElementRef<HTMLElement>;
 
+  private subsink = new SubSink();
+  private destroy$ = new Subject<void>();
+  private resizeObserver: ResizeObserver | undefined;
+
   public activeIndex = input<number>(0);
   public tabHeight = input<string | number>('h-[3.8rem]');
   public tabHighlightColor = input<string>('bg-gray-300');
   public tabBackgroundColor = input<string>('bg-gray-100');
-
   public onTabChange = output<number>();
 
-  private subsink = new SubSink();
-  private destroy$ = new Subject<void>();
-  private resizeObserver: ResizeObserver | undefined;
   protected currentIndex = signal(0);
   protected indicator = signal({
     left: 0,

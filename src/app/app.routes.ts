@@ -1,18 +1,21 @@
 import { Routes } from '@angular/router';
-import { authGuard } from '@shared/guards/auth.guard';
 
+import { authGuard, loginGuard } from '@shared/guards';
+
+import { AuthComponent } from 'modules/auth/components/auth/auth.component';
 import { HomeComponent } from 'modules/home/components/home/home.component';
 import { PlayComponent } from 'modules/play/components/play/play.component';
 
 export const routes: Routes = [
   {
     path: 'auth',
-    loadChildren: () => import('./modules/auth/auth.routes').then(r => r.AuthRoutes),
+    canActivate: [loginGuard],
+    component: AuthComponent,
   },
-  { path: '', redirectTo: 'home', pathMatch: 'full', },
+  { path: '', redirectTo: 'home', pathMatch: 'full' },
   {
     path: '',
-    canActivate: [ authGuard ],
+    canActivate: [authGuard],
     children: [
       { path: 'play', component: PlayComponent },
       { path: 'home', component: HomeComponent },
