@@ -24,11 +24,11 @@
       <div class="w-full flex justify-center items-center">
         <button
           class="w-full p-4 rounded-sm font-bold"
-          type="button"
+          type="submit"
           [ngClass]="[
-            loginForm.valid ? `${CONSTANTS.bg.bg_300}` : 'bg-lime-100 cursor-not-allowed',
+            loginForm.valid ? `${CONSTANTS.bg.bg_300} cursor-pointer` : 'bg-lime-100 cursor-not-allowed',
             ]"
-          [disabled]="loginForm.valid">
+          [disabled]="loginForm.invalid">
             {{ CONSTANTS.SUBMIT }}
         </button>
       </div>

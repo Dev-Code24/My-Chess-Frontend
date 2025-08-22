@@ -3,10 +3,10 @@ import { Component, inject, output, signal } from '@angular/core';
 import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 
-import { faEye, faEyeSlash } from '@fortawesome/free-regular-svg-icons';
+import { AuthForm, AuthProvider } from 'modules/auth/@interface';
 import { SIGN_UP } from '../../@utils/constants';
 import { COLORS } from '@shared/@utils/constants';
-import { AuthForm } from 'modules/auth/@interface/interface';
+import { faEye, faEyeSlash } from '@fortawesome/free-regular-svg-icons';
 
 @Component({
   selector: 'mc-signup',
@@ -16,7 +16,6 @@ import { AuthForm } from 'modules/auth/@interface/interface';
 export class SignUpComponent {
   private formBuilder = inject(FormBuilder);
 
-  public submit = output <AuthForm>();
 
   protected previewIcon = signal(faEye);
   protected passwordInputType = signal<'password' | 'text'>('password');
@@ -26,13 +25,15 @@ export class SignUpComponent {
     'w-full', 'placeholder:text-gray-400'
   ];
   protected signUpForm = this.formBuilder.nonNullable.group(
-  {
-    email: this.formBuilder.control<string>('', [Validators.required, Validators.email]),
-    password: this.formBuilder.control<string>('', [Validators.required, Validators.minLength(6)]),
-    confirmPassword: this.formBuilder.control<string>('', [Validators.required, Validators.minLength(6)])
-  },
-  { validators: this.passwordValidator }
-);
+    {
+      email: this.formBuilder.control<string>('', [Validators.required, Validators.email]),
+      password: this.formBuilder.control<string>('', [Validators.required, Validators.minLength(6)]),
+      confirmPassword: this.formBuilder.control<string>('', [Validators.required, Validators.minLength(6)])
+    },
+    { validators: this.passwordValidator }
+  );
+
+  public submitSignupForm = output <AuthForm>();
 
   private passwordValidator(group: AbstractControl): ValidationErrors | null {
     const pass = group.get('password')?.value;
@@ -53,15 +54,15 @@ export class SignUpComponent {
   }
 
   protected onSubmit(): void {
-    if (this.signUpForm.valid) {
-      const signUpFormObject: AuthForm = {
-        'formType': 'LOGIN'
-      };
-      Object.entries(this.signUpForm.controls).forEach((field) => {
-        const key = field[0], control = field[1];
-        signUpFormObject[key] = control.get(key)!.value;
-      })
-      this.submit.emit(signUpFormObject);
-    }
+    const signUpFormObject: AuthForm = {
+      formType: 'SIGN_UP',
+      payload: {
+        authProvider: AuthProvider.LOCAL,
+        email: this.signUpForm.controls.email.value ?? '',
+        password: this.signUpForm.controls.password.value ?? '',
+        username: this.signUpForm.controls.email.value ?? '',
+      }
+    };
+    this.submitSignupForm.emit(signUpFormObject);
   }
 }

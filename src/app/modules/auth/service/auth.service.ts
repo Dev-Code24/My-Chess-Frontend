@@ -1,39 +1,25 @@
 import { inject, Injectable } from '@angular/core';
-import { JwtHelperService } from '@auth0/angular-jwt';
-
-import { JWT_TOKEN_STORAGE_KEY } from '../@utils/constants';
 import { StateManagerService } from '@shared/services/state-manager.service';
 import { DEFAULT_USER_DATA } from '@shared/@utils/constants';
+import { LoginApiResponseAttribute } from '../@interface';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private readonly jwtService = inject(JwtHelperService);
   private readonly stateManagerService = inject(StateManagerService);
 
-  private readonly JWT_STORAGE_KEY = JWT_TOKEN_STORAGE_KEY;
+  public isUserAuthenticated(): boolean { return this.stateManagerService.getUser().isLoggedIn; }
+  public authenticate(user: LoginApiResponseAttribute): boolean {
+    this.stateManagerService.updateUser({
+      isLoggedIn: true,
+      details: user,
+    })
 
-  public get JWT(): string | null { return localStorage.getItem(this.JWT_STORAGE_KEY); }
-  private set setAuthToken(token: string) { localStorage.setItem(this.JWT_STORAGE_KEY, token); }
-  private clearToken(): void { localStorage.removeItem(this.JWT_STORAGE_KEY); }
-
-  public get isUserAuthenticated(): boolean {
-    if (!this.JWT) { return false; }
-    return !this.jwtService.isTokenExpired(this.JWT);
-  }
-  public logIn(): boolean {
-    // Add proper login implementation
-    let jwtData = DEFAULT_USER_DATA;
-    if (this.JWT) {
-      jwtData.details = this.jwtService.decodeToken(this.JWT);
-    }
-    this.stateManagerService.updateUser({ ...jwtData, isLoggedIn: !!jwtData.details, });
     return true;
   }
   public logOut(): boolean {
-
-    this.clearToken();
+    this.stateManagerService.updateUser(DEFAULT_USER_DATA);
     return true;
   }
 }

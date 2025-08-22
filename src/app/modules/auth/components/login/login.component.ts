@@ -3,10 +3,10 @@ import { Component, inject, output, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 
-import { faEye, faEyeSlash } from '@fortawesome/free-regular-svg-icons';
+import { AuthForm } from '../../@interface';
 import { LOGIN } from '../../@utils/constants';
 import { COLORS } from '@shared/@utils/constants';
-import { AuthForm } from './../../@interface/interface';
+import { faEye, faEyeSlash } from '@fortawesome/free-regular-svg-icons';
 
 @Component({
   selector: 'mc-login',
@@ -15,8 +15,6 @@ import { AuthForm } from './../../@interface/interface';
 })
 export class LoginComponent {
   private formBuilder = inject(FormBuilder);
-
-  public submit = output <AuthForm>();
 
   protected previewIcon = signal(faEye);
   protected passwordInputType = signal<'password' | 'text'>('password');
@@ -27,8 +25,10 @@ export class LoginComponent {
   ];
   protected loginForm = this.formBuilder.nonNullable.group({
     email: this.formBuilder.control<string>('', [Validators.required, Validators.email]),
-    password: this.formBuilder.control<string>('', [Validators.required, Validators.minLength(6)])
+    password: this.formBuilder.control<string>('', [Validators.required, Validators.minLength(4)])
   });
+
+  public submitLoginForm = output <AuthForm>();
 
   protected togglePassword(): void {
     this.passwordInputType.update((value) => {
@@ -43,15 +43,13 @@ export class LoginComponent {
   }
 
   protected onSubmit(): void {
-    if (this.loginForm.valid) {
-      const loginFormObject: AuthForm = {
-        'formType': 'LOGIN'
-      };
-      Object.entries(this.loginForm.controls).forEach((field) => {
-        const key = field[0], control = field[1];
-        loginFormObject[key] = control.get(key)!.value;
-      })
-      this.submit.emit(loginFormObject);
-    }
+    const loginFormObject: AuthForm = {
+      formType: 'LOGIN',
+      payload: {
+        email: this.loginForm.controls.email.value ?? '',
+        password: this.loginForm.controls.password.value ?? '',
+      }
+    };
+    this.submitLoginForm.emit(loginFormObject);
   }
 }

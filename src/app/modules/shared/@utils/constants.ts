@@ -5,6 +5,14 @@ export const DEFAULT_USER_DATA: UserInterface = {
   details: null
 };
 
+// export const DEFAULT_USER_DATA: UserInterface = {
+//   isLoggedIn: true,
+//   details: {
+//     name: 'Rajeev Lochan Muduli',
+//     email: '',
+//   },
+// }
+
 export const COLORS = {
   bg: {
     bg_WHITE: 'bg-lime-50',

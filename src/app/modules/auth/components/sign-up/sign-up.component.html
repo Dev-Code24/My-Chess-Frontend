@@ -1,16 +1,16 @@
-<div class="login-container flex flex-col gap-4 h-full">
-  <div class="login-title w-full flex justify-center items-center text-black font-bold text-xl"><span>{{ CONSTANTS.TITLE }}</span></div>
-  <div class="login-form h-full">
+<div class="signup-container flex flex-col gap-4 h-full">
+  <div class="signup-title w-full flex justify-center items-center text-black font-bold text-xl"><span>{{ CONSTANTS.TITLE }}</span></div>
+  <div class="signup-form h-full">
     <form [formGroup]="signUpForm" (ngSubmit)="onSubmit()" class="flex flex-col justify-between h-full gap-4">
       <div class="input-fields">
         <div class="flex flex-col gap-1 mb-[0.65rem]">
-          <label for="login-email">Email:</label>
-          <input class="{{ inputStyle.join(' ') }}" required formControlName="email" type="text" name="login-email" id="login-email" [placeholder]="CONSTANTS.EMAIL_PLACEHOLDER">
+          <label for="signup-email">Email:</label>
+          <input class="{{ inputStyle.join(' ') }}" required formControlName="email" type="text" name="signup-email" id="signup-email" [placeholder]="CONSTANTS.EMAIL_PLACEHOLDER">
         </div>
         <div class="flex flex-col gap-1 mb-[0.65rem]">
-          <label for="login-password">Password</label>
+          <label for="signup-password">Password</label>
           <div class="flex relative">
-            <input class="{{ inputStyle.join(' ') }}" required formControlName="password" [type]="passwordInputType()" name="login-password" id="login-password"
+            <input class="{{ inputStyle.join(' ') }}" required formControlName="password" [type]="passwordInputType()" name="signup-password" id="signup-password"
             [placeholder]="CONSTANTS.PASSWORD_PLACEHOLDER">
             <span
               class="transition-colors duration-300 ease-out p-1 rounded-[50%] absolute right-[0.25rem] top-[0.25rem] cursor-pointer w-[32px] flex justify-center items-center
@@ -21,9 +21,9 @@
           </div>
         </div>
         <div class="flex flex-col gap-1">
-          <label for="login-password">Confirm Password</label>
+          <label for="signup-password">Confirm Password</label>
           <div class="flex relative">
-            <input class="{{ inputStyle.join(' ') }}" required formControlName="confirmPassword" [type]="passwordInputType()" name="login-password" id="login-password"
+            <input class="{{ inputStyle.join(' ') }}" required formControlName="confirmPassword" [type]="passwordInputType()" name="signup-password" id="signup-password"
             [placeholder]="CONSTANTS.CONFIRM_PASSWORD_PLACEHOLDER">
             <span
               class="transition-colors duration-300 ease-out p-1 rounded-[50%] absolute right-[0.25rem] top-[0.25rem] cursor-pointer w-[32px] flex justify-center items-center
@@ -37,11 +37,11 @@
       <div class="w-full flex justify-center items-center">
         <button
           class="w-full p-4 rounded-sm font-bold"
-          type="button"
+          type="submit"
           [ngClass]="[
-            signUpForm.valid ? `${CONSTANTS.bg.bg_300}` : 'bg-lime-100 cursor-not-allowed',
+            signUpForm.valid ? `${CONSTANTS.bg.bg_300} cursor-pointer` : 'bg-lime-100 cursor-not-allowed',
             ]"
-          [disabled]="!signUpForm.valid">
+          [disabled]="signUpForm.invalid">
             {{ CONSTANTS.SUBMIT }}
         </button>
       </div>

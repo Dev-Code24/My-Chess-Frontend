@@ -1,2 +1,7 @@
-export type { UserInterface } from './interface';
-export type { SizeType as IconSize } from './ui-interface';
+export type { EnvironmentConfigurations } from './environment';
+export type {
+  UserInterface,
+  UserDetails,
+} from './user';
+export type { IconSize } from './ui';
+export type { BasicApiResponse } from './api';

@@ -3,12 +3,17 @@
     <MyChessLogo size="xl" />
   </div>
   <div class="w-sm h-[28rem]">
-    <mc-tabview (onTabChange)="onTabChange($event)" tabHeight="h-[3.5rem]" [activeIndex]="activeIndex()" [tabHighlightColor]="CONSTANTS.bg.bg_300" [tabBackgroundColor]="CONSTANTS.bg.bg_100">
+    <mc-tabview
+      tabHeight="h-[3.5rem]"
+      [tabHighlightColor]="CONSTANTS.bg.bg_300"
+      [tabBackgroundColor]="CONSTANTS.bg.bg_100"
+      (onTabChange)="onTabChange($event)"
+      [activeIndex]="activeIndex()">
       <mc-tabviewPanel [header]="CONSTANTS.HEADER_LOGIN">
-        <mc-login (submit)="handleSubmit($event)" />
+        <mc-login (submitLoginForm)="handleLoginOrSignup($event)"/>
       </mc-tabviewPanel>
       <mc-tabviewPanel [header]="CONSTANTS.HEADER_SIGN_UP">
-        <mc-signup (submit)="handleSubmit($event)" />
+        <mc-signup (submitSignupForm)="handleLoginOrSignup($event)" />
       </mc-tabviewPanel>
     </mc-tabview>
   </div>
