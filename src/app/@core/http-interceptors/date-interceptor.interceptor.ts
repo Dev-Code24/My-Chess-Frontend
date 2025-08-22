@@ -1,12 +1,12 @@
 import { HttpInterceptorFn, HttpResponse } from '@angular/common/http';
 import { map } from 'rxjs/operators';
 
-export const DateInterceptor: HttpInterceptorFn = (req, next) => {
+export const DateHttpInterceptor: HttpInterceptorFn = (req, next) => {
   return next(req).pipe(
-    map(event => {
+    map((event) => {
       if (event instanceof HttpResponse && event.body) {
         return event.clone({
-          body: convertDates(event.body)
+          body: convertDates(event.body),
         });
       }
       return event;
@@ -22,7 +22,7 @@ function convertDates(body: any): any {
   }
 
   if (Array.isArray(body)) {
-    return body.map(val => convertDates(val));
+    return body.map((val) => convertDates(val));
   }
 
   if (typeof body === 'object') {

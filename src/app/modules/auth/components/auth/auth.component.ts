@@ -38,7 +38,7 @@ export class AuthComponent  {
         break;
       case 1:
         this.router.navigate(['auth'], {
-          queryParams: { 'sign-up': true, }
+          queryParams: { signup: true, }
         });
         break;
       default: break;
@@ -55,7 +55,7 @@ export class AuthComponent  {
             console.log(res.timestamp);
           },
           error: (err: HttpErrorResponse) => console.error('🥲 Something bad happened', err),
-          complete: () => this.router.navigate(['/home'])
+          complete: () => this.router.navigate(['home'])
         });
         break;
       case 'SIGN_UP':
@@ -65,7 +65,7 @@ export class AuthComponent  {
             console.log(res.timestamp);
           },
           error: (err: HttpErrorResponse) => console.error('🥲 Something bad happened', err),
-          complete: () => this.router.navigate(['/home'])
+          complete: () => this.router.navigate(['home'])
         });
         break;
       default:

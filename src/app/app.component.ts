@@ -13,10 +13,11 @@ import { NavbarComponent } from "modules/navbar/components/navbar/navbar.compone
   styleUrl: './app.component.scss'
 })
 export class AppComponent implements OnInit, OnDestroy {
-  private readonly stateManagerService = inject(StateManagerService);
-
   public readonly title = 'my-chess-frontend';
+
   protected user = signal<UserInterface>(DEFAULT_USER_DATA);
+
+  private readonly stateManagerService = inject(StateManagerService);
   private subsink = new SubSink();
 
   public ngOnInit(): void {

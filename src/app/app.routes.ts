@@ -12,13 +12,13 @@ export const routes: Routes = [
     canActivate: [loginGuard],
     component: AuthComponent,
   },
-  { path: '', redirectTo: 'home', pathMatch: 'full' },
   {
     path: '',
     canActivate: [authGuard],
     children: [
-      { path: 'play', component: PlayComponent },
+      { path: '', redirectTo: 'home', pathMatch: 'full' },
       { path: 'home', component: HomeComponent },
+      { path: 'play', component: PlayComponent },
     ],
   },
   { path: '**', redirectTo: 'home', pathMatch: 'full' },
