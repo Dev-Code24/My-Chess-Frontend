@@ -60,7 +60,7 @@ export class SignUpComponent {
         authProvider: AuthProvider.LOCAL,
         email: this.signUpForm.controls.email.value ?? '',
         password: this.signUpForm.controls.password.value ?? '',
-        username: this.signUpForm.controls.email.value ?? '',
+        username: '',
       }
     };
     this.submitSignupForm.emit(signUpFormObject);
