@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, input } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { RouterLink, UrlTree } from '@angular/router';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 
 import { type IconDefinition } from '@fortawesome/free-regular-svg-icons';
@@ -13,7 +13,7 @@ import { type IconDefinition } from '@fortawesome/free-regular-svg-icons';
 export class LinkButtonComponent {
   public label = input.required<string>();
   public styleClass = input<string>();
-  public href = input.required<string>();
+  public href = input.required<string | UrlTree>();
   public icon = input<IconDefinition>();
   public iconStyleClass = input<string>();
 
