@@ -1,17 +1,15 @@
-import { HttpClient, HttpErrorResponse } from "@angular/common/http";
 import { inject } from "@angular/core";
 import { catchError, of, tap } from "rxjs";
 
-import { UserDetails } from "@shared/@interface";
-import { AuthService } from "modules/auth/service/auth.service";
-import { environment } from "../../../environments/environment.development";
+import { AuthService } from "modules/auth/service";
 import { LoginApiResponse } from "modules/auth/@interface";
+import { CommonConnectBackendService } from "@shared/services";
 
 export function AuthAppInitiazer () {
   const auth = inject(AuthService);
-  const http = inject(HttpClient);
+  const commonConnectBackend = inject(CommonConnectBackendService);
 
-  return http.get<LoginApiResponse>(`${environment.baseApiUrl}/user/me`, { withCredentials: true, })
+  return commonConnectBackend.get<LoginApiResponse>('user/me')
     .pipe(
       tap((value) => { auth.authenticate(value.data); }),
       catchError(() => {

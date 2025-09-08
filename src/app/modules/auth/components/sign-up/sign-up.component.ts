@@ -7,10 +7,11 @@ import { AuthForm, AuthProvider } from 'modules/auth/@interface';
 import { SIGN_UP } from '../../@utils/constants';
 import { COLORS } from '@shared/@utils/constants';
 import { faEye, faEyeSlash } from '@fortawesome/free-regular-svg-icons';
+import { ButtonComponent } from "@shared/components/button/button";
 
 @Component({
   selector: 'mc-signup',
-  imports: [ CommonModule, FontAwesomeModule, ReactiveFormsModule ],
+  imports: [CommonModule, FontAwesomeModule, ReactiveFormsModule, ButtonComponent],
   templateUrl: './sign-up.component.html',
 })
 export class SignUpComponent {

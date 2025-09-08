@@ -35,15 +35,11 @@
         </div>
       </div>
       <div class="w-full flex justify-center items-center">
-        <button
-          class="w-full p-4 rounded-sm font-bold"
-          type="submit"
-          [ngClass]="[
-            signUpForm.valid ? `${CONSTANTS.bg.bg_300} cursor-pointer` : 'bg-lime-100 cursor-not-allowed',
-            ]"
-          [disabled]="signUpForm.invalid">
-            {{ CONSTANTS.SUBMIT }}
-        </button>
+        <mc-button
+          [title]="CONSTANTS.SUBMIT"
+          [isDisabled]="signUpForm.invalid"
+          buttonType="submit"
+          class="w-full" />
       </div>
     </form>
   </div>

@@ -6,6 +6,7 @@
       [icon]="playIcon"
       styleClass="bg-purple-600 text-purple-50 hover:bg-purple-700 active:bg-purple-900 cursor-pointer w-full
       sm:w-[18rem] md:w-[22rem] h-[10rem] sm:h-[12rem] text-4xl md:text-5xl rounded-xl"
+      (click)="createRoom()"
     />
     <mc-linkButton
       label="Join Room"
@@ -15,7 +16,7 @@
       sm:w-[18rem] md:w-[22rem] h-[10rem] sm:h-[12rem] text-4xl md:text-5xl rounded-xl"
     />
   </div>
-  <div class="w-full h-[40vh] md:h-[50vh] min-h-[32rem]">
+  <div class="w-full h-[40vh] md:h-[50vh] min-h-[26rem]">
     <img
       src="/chess-banner.jpg"
       alt="Chess banner"
@@ -23,3 +24,12 @@
     >
   </div>
 </div>
+
+<mc-dialog
+  [(isVisible)]="homeDialog().isVisible"
+  [config]="homeDialogConfig"
+  (onDialogClose)="onDialogClose()" >
+  @if (homeDialog().formType === 'join') {
+    <app-join-room (onRoomJoin)="onRoomJoin($event)" [isLoading]="isLoading()" />
+  }
+</mc-dialog>

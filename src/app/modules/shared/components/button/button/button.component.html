@@ -1,0 +1,31 @@
+<button
+  class="w-full p-4 rounded-md font-bold"
+  [type]="buttonType()"
+  [ngClass]="[
+      !isDisabled() ?
+      'bg-lime-300 hover:bg-lime-400 cursor-pointer transition-colors duration-300 transition-discrete ease-in-out delay-100' :
+      'bg-lime-100 cursor-not-allowed',
+    ]"
+  [disabled]="isDisabled()">
+  @if (!isLoading()) {
+    <span
+      class="text-lime-900"
+      [ngClass]="{
+        'text-base': buttonSize() === 'sm',
+        'text-xl': buttonSize() === 'md',
+        'text-2xl': buttonSize() === 'lg'
+      }">
+      {{ title() }}
+    </span>
+  } @else {
+    <fa-icon
+      [icon]="spinnerIcon"
+      animation="spin"
+      class="text-lime-900"
+      [ngClass]="{
+        'text-base': buttonSize() === 'sm',
+        'text-xl': buttonSize() === 'md',
+        'text-2xl': buttonSize() === 'lg'
+      }" />
+  }
+</button>

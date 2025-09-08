@@ -1,0 +1,47 @@
+<dialog
+  #dialogRef
+  class="border-none rounded-xl shadow-2xl p-0 max-w-[90vw] max-h-[90vh] overflow-hidden
+          backdrop:bg-black/50 backdrop:backdrop-blur-sm"
+  [ngClass]="config().className"
+  [ngStyle]="{
+    'width': config().width,
+    'height': config().height,
+    'top': topAndLeft().top,
+    'left': topAndLeft().left
+  }"
+  (click)="onBackdropClick($event)"
+  [open]="isVisible()">
+
+  <div class="flex flex-col h-full w-full">
+    @if (config().title || config().closable) {
+      <div
+        class="w-full flex justify-between items-center py-4 px-5 border-b border-gray-200 bg-lime-50"
+        [ngClass]="{ 'flex-row-reverse' : !config().title }">
+        @if (config().title) {
+          <h2 class="m-0 text-lg font-semibold text-gray-900">{{ config().title }}</h2>
+        }
+        @if (config().closable) {
+          <button
+            class="bg-lime-100 border-none text-2xl cursor-pointer text-lime-700 p-1 rounded-md
+                    flex items-center justify-center w-8 h-8 transition-colors duration-200
+                    hover:bg-lime-200 hover:text-lime-800"
+            type="button"
+            (click)="close()"
+            aria-label="Close dialog">
+            ×
+          </button>
+        }
+      </div>
+    }
+    <div class="flex-1 p-5 overflow-y-auto h-full">
+      <ng-content></ng-content>
+    </div>
+    <ng-container>
+      <div
+        class="py-4 px-5 border-t border-gray-200 bg-gray-50 flex gap-2 justify-end"
+        ngProjectAs="[slot=footer]">
+        <ng-content select="[slot=footer]"></ng-content>
+      </div>
+    </ng-container>
+  </div>
+</dialog>
