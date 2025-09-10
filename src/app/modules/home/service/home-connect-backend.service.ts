@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { JoinRoomApiPayload, JoinRoomApiResponse } from '../@interface';
+import { CreateRoomApiResponse, JoinRoomApiPayload, JoinRoomApiResponse } from '../@interface';
 import { CommonConnectBackendService } from '@shared/services';
 
 @Injectable({
@@ -13,5 +13,9 @@ export class HomeConnectBackendService {
 
   public joinRoom(roomId: JoinRoomApiPayload): Observable<JoinRoomApiResponse> {
     return this.commonConnectBackend.post<JoinRoomApiResponse>('/room/join', roomId);
+  }
+
+  public createRoom(): Observable<CreateRoomApiResponse> {
+    return this.commonConnectBackend.post('/room/create', {});
   }
 }

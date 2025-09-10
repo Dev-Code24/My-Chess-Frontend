@@ -33,12 +33,12 @@
         }
       </div>
     }
-    <div class="flex-1 p-5 overflow-y-auto h-full">
+    <div class="flex-1 p-3 sm:p-5 overflow-y-auto h-full">
       <ng-content></ng-content>
     </div>
     <ng-container>
       <div
-        class="py-4 px-5 border-t border-gray-200 bg-gray-50 flex gap-2 justify-end"
+        class="py-4 px-5 border-t border-gray-200 bg-lime-50 flex gap-2 justify-end"
         ngProjectAs="[slot=footer]">
         <ng-content select="[slot=footer]"></ng-content>
       </div>

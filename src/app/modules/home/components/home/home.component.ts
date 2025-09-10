@@ -12,10 +12,11 @@ import { DialogComponent } from "@shared/components/dialog/dialog.component";
 import { HomeConnectBackendService } from 'modules/home/service/home-connect-backend.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { finalize } from 'rxjs';
+import { ButtonComponent } from "../../../shared/components/button/button/button.component";
 
 @Component({
   selector: 'app-home',
-  imports: [LinkButtonComponent, DialogComponent, JoinRoomComponent],
+  imports: [LinkButtonComponent, DialogComponent, JoinRoomComponent, ButtonComponent],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'
 })
@@ -24,7 +25,6 @@ export class HomeComponent implements OnInit, OnDestroy {
   protected joinRoomIcon = faDoorOpen;
   protected BG = COLORS.bg;
   protected joinRoomUrl!: UrlTree;
-  protected playUrl!: UrlTree;
   protected homeDialog = signal<HomeDialog>({ isVisible: false, formType: null });
   protected homeDialogConfig: DialogConfig = {
     width: '40rem',
@@ -43,7 +43,6 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   public ngOnInit(): void {
     this.joinRoomUrl = this.router.createUrlTree(['home'], { queryParams: { joinRoom: true, }, });
-    this.playUrl = this.router.createUrlTree(['home'], { queryParams: { createRoom: true, }, });
     this.subsink.sink = this.route.queryParams.subscribe((params) => {
       if (params['joinRoom'] === 'true') {
         this.homeDialog.set({ isVisible: true, formType: 'join' });
@@ -56,27 +55,51 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   protected createRoom(): void {
-    console.log('Creating room...');
+    this.isLoading.set(true);
+    let code: string;
+    this.subsink.sink = this.connectBackend.createRoom()
+      .pipe(
+        finalize(() => {
+          this.isLoading.set(false);
+          if (code) { this.navigateToRoom(code); }
+        })
+      )
+      .subscribe({
+      next: (response) => {
+          console.log(response);
+          code = response.data.code;
+      },
+      error: (error: HttpErrorResponse) => {
+        console.log(error);
+      },
+    });
   }
 
   protected onDialogClose(): void {
     this.router.navigate([], { relativeTo: this.route });
   }
 
-  protected onRoomJoin(roomId: string): void {
-    const joinRoomApiPayload: JoinRoomApiPayload = { roomId };
+  protected onRoomJoin(code: string): void {
+    const joinRoomApiPayload: JoinRoomApiPayload = { code };
     this.isLoading.set(true);
     this.subsink.sink = this.connectBackend.joinRoom(joinRoomApiPayload)
       .pipe(
         finalize(() => this.isLoading.set(false))
       )
       .subscribe({
-      next: (response) => {
-        console.log('response', response);
-      },
-      error: (error: HttpErrorResponse) => {
-        console.log('error', error);
-      }
+        next: (response) => {
+          console.log('response', response);
+        },
+        error: (error: HttpErrorResponse) => {
+          console.log('error', error);
+        },
+        complete: () => {
+          this.navigateToRoom(code);
+        }
     });
+  }
+
+  private navigateToRoom(code: string) {
+    this.router.navigate([`play/${code.slice(0, 3)}-${code.slice(3)}`]);
   }
 }

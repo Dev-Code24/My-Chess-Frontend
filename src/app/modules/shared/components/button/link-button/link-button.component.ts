@@ -4,6 +4,7 @@ import { RouterLink, UrlTree } from '@angular/router';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 
 import { type IconDefinition } from '@fortawesome/free-regular-svg-icons';
+import { faCircleNotch } from '@fortawesome/free-solid-svg-icons';
 
 @Component({
   selector: 'mc-linkButton',
@@ -11,30 +12,27 @@ import { type IconDefinition } from '@fortawesome/free-regular-svg-icons';
   templateUrl: './link-button.component.html',
 })
 export class LinkButtonComponent {
-  public label = input.required<string>();
-  public styleClass = input<string>();
   public href = input.required<string | UrlTree>();
+  public label = input.required<string>();
   public icon = input<IconDefinition>();
-  public iconStyleClass = input<string>();
+  public styleClass = input<string>();
+  public isDisabled = input<boolean>(false);
+  public isLoading = input<boolean>(false);
+  public buttonSize = input<'sm' | 'md' | 'lg' | 'accent'>('sm');
+
+  protected spinnerIcon = faCircleNotch;
 
   protected getButtonClass(): string {
     const classes: string[] = [];
-    const inputsObj = {
+    const styles = {
+      constant: 'flex justify-center items-center gap-2 duration-300 transition-colors transition-discrete ease-in-out delay-100 cursor-pointer disabled:cursor-not-allowed',
+      default: 'text-lime-900 bg-lime-300 hover:bg-lime-400 active:bg-lime-500 w-full h-full disabled:bg-lime-100 p-4 rounded-md font-medium shadow-sm hover:shadow-md',
       styleClass: this.styleClass(),
     };
 
-    if (inputsObj.styleClass) { classes.push(inputsObj.styleClass); }
-
-    return classes.join(' ');
-  }
-
-  protected getIconClass(): string {
-    const classes: string[] = [];
-    const inputObj = {
-      styleClass: this.iconStyleClass(),
-    }
-
-    if (inputObj.styleClass) { classes.push(inputObj.styleClass); }
+    classes.push(styles.constant);
+    if (styles.styleClass) { classes.push(styles.styleClass); }
+    else { classes.push(styles.default); }
 
     return classes.join(' ');
   }

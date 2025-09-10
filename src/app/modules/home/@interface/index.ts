@@ -6,13 +6,24 @@ export interface HomeDialog {
 }
 
 export interface JoinRoomApiPayload {
-  roomId: string;
+  code: string;
 }
 
-interface RoomApiResponseAttribute {
-  roomId: string;
+interface JoinRoomApiResponseAttribute {
+  code: string;
   whitePlayer: string;
   blackPlayer: string;
 }
 
-export interface JoinRoomApiResponse extends BasicApiResponse<RoomApiResponseAttribute> { }
+interface CreateRoomApiResponseAttribute {
+  id: string;
+  code: string;
+  whitePlayer: string;
+  blackPlayer: string;
+  lastActivity: Date;
+  roomStatus: string;
+  gameStatus: string;
+}
+
+export interface JoinRoomApiResponse extends BasicApiResponse<JoinRoomApiResponseAttribute> { }
+export interface CreateRoomApiResponse extends BasicApiResponse<CreateRoomApiResponseAttribute> { }

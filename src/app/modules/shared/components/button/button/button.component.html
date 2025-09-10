@@ -1,31 +1,37 @@
 <button
-  class="w-full p-4 rounded-md font-bold"
   [type]="buttonType()"
-  [ngClass]="[
-      !isDisabled() ?
-      'bg-lime-300 hover:bg-lime-400 cursor-pointer transition-colors duration-300 transition-discrete ease-in-out delay-100' :
-      'bg-lime-100 cursor-not-allowed',
-    ]"
-  [disabled]="isDisabled()">
+  [ngClass]="getButtonClass()"
+  [disabled]="isDisabled() || isLoading()">
   @if (!isLoading()) {
+    @if (icon()) {
+      <span
+        [ngClass]=" {
+          'text-sm sm:text-base': buttonSize() === 'sm',
+          'text-base sm:text-xl': buttonSize() === 'md',
+          'text-xl sm:text-2xl': buttonSize() === 'lg',
+          'text-4xl md:text-5xl': buttonSize() === 'accent',
+        }">
+        <fa-icon [icon]="icon()!" />
+      </span>
+    }
     <span
-      class="text-lime-900"
       [ngClass]="{
-        'text-base': buttonSize() === 'sm',
-        'text-xl': buttonSize() === 'md',
-        'text-2xl': buttonSize() === 'lg'
+        'text-sm sm:text-base': buttonSize() === 'sm',
+        'text-base sm:text-xl': buttonSize() === 'md',
+        'text-xl sm:text-2xl': buttonSize() === 'lg',
+        'text-4xl md:text-5xl': buttonSize() === 'accent',
       }">
-      {{ title() }}
+      {{ label() }}
     </span>
   } @else {
     <fa-icon
       [icon]="spinnerIcon"
       animation="spin"
-      class="text-lime-900"
       [ngClass]="{
-        'text-base': buttonSize() === 'sm',
-        'text-xl': buttonSize() === 'md',
-        'text-2xl': buttonSize() === 'lg'
+        'text-sm sm:text-base': buttonSize() === 'sm',
+        'text-base sm:text-xl': buttonSize() === 'md',
+        'text-xl sm:text-2xl': buttonSize() === 'lg',
+        'text-4xl md:text-5xl': buttonSize() === 'accent',
       }" />
   }
 </button>
