@@ -1,16 +1,16 @@
 import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
+import { ActivatedRoute, Router, UrlTree } from '@angular/router';
+import { HttpErrorResponse } from '@angular/common/http';
 
 import { SubSink } from '@shared/@utils/Subsink';
 import { COLORS } from '@shared/@utils/constants';
 import { faDoorOpen, faPlayCircle } from '@fortawesome/free-solid-svg-icons';
-import { ActivatedRoute, Router, UrlTree } from '@angular/router';
 import { HomeDialog, JoinRoomApiPayload } from '../../@interface';
 import { DialogConfig } from '@shared/@interface';
 import { JoinRoomComponent } from "../join-room/join-room.component";
 import { LinkButtonComponent } from "@shared/components/button/link-button/link-button.component";
 import { DialogComponent } from "@shared/components/dialog/dialog.component";
 import { HomeConnectBackendService } from 'modules/home/service/home-connect-backend.service';
-import { HttpErrorResponse } from '@angular/common/http';
 import { finalize } from 'rxjs';
 import { ButtonComponent } from "../../../shared/components/button/button/button.component";
 
@@ -53,7 +53,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   public ngOnDestroy(): void {
     this.subsink.unsubscribeAll();
   }
-
+  // TODO: Figure out what to do with create and join room responses or make the API responses send nothing
   protected createRoom(): void {
     this.isLoading.set(true);
     let code: string;
@@ -66,8 +66,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       )
       .subscribe({
       next: (response) => {
-          console.log(response);
-          code = response.data.code;
+        code = response.data.code;
       },
       error: (error: HttpErrorResponse) => {
         console.log(error);
@@ -100,6 +99,6 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   private navigateToRoom(code: string) {
-    this.router.navigate([`play/${code.slice(0, 3)}-${code.slice(3)}`]);
+    this.router.navigate([`play/${code}`]);
   }
 }
