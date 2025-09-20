@@ -1,6 +1,19 @@
 <div
-  [ngStyle]="{ 'background-color': generatedHSL()?.[0] }"
-  class="p-2 rounded-[50%] w-[2.5rem] h-[2.5rem] flex items-center justify-center cursor-pointer hover:brightness-90
-  transition-all duration-350 ease-in-out select-none">
-  {{ labelInitials }}
+  class="avatar-container flex items-center gap-2"
+  [ngClass]="{
+      'flex-row-reverse' : usernamePosition() === 'right'
+    }">
+  @if (username()) {
+    <span class="text-base font-semibold" [ngStyle]="{ 'color': usernameColor() }">
+      {{ username() }}
+    </span>
+  }
+  <div
+    [ngStyle]="{ 'background-color': generatedHSL()[0] }"
+    class="p-2 rounded-[50%] w-[2.5rem] h-[2.5rem] flex items-center justify-center transition-all duration-350 ease-in-out select-none"
+    [ngClass]="{
+      'hover:brightness-90 cursor-pointer': actionable()
+    }">
+    <span [ngStyle]="{ 'color': usernameColor() }">{{ labelInitials }}</span>
+  </div>
 </div>

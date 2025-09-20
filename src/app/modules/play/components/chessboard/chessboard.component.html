@@ -1,0 +1,46 @@
+<div class="board-layout w-full h-full flex flex-col justify-center items-center gap-3">
+  <div class="board-layout-player-top pr-2 flex justify-end transition-[width] ease-in-out">
+    <mc-avatar [label]="opponent()!.username" [username]="opponent()!.username" />
+  </div>
+  <div class="board-layout-board flex items-center justify-center">
+    <div #chessBoard class="chess-board relative aspect-square" [class.flip]="whoIsBlackPlayer() === 'me'">
+      <svg
+        class="coordinates absolute left-[0] top-[0]"
+        viewBox="0 0 100 100" aria-hidden="true">
+        <text x="0.5" y="3" font-size="2.5" class="coordinate">8</text>
+        <text x="0.5" y="15.25" font-size="2.5" class="coordinate">7</text>
+        <text x="0.5" y="27.75" font-size="2.5" class="coordinate">6</text>
+        <text x="0.5" y="40.25" font-size="2.5" class="coordinate">5</text>
+        <text x="0.5" y="52.75" font-size="2.5" class="coordinate">4</text>
+        <text x="0.5" y="65.25" font-size="2.5" class="coordinate">3</text>
+        <text x="0.5" y="77.75" font-size="2.5" class="coordinate">2</text>
+        <text x="0.5" y="90.25" font-size="2.5" class="coordinate">1</text>
+        <text x="98" y="99" font-size="2.5" class="coordinate">h</text>
+        <text x="85.5" y="99" font-size="2.5" class="coordinate">g</text>
+        <text x="73" y="99" font-size="2.5" class="coordinate">f</text>
+        <text x="60.5" y="99" font-size="2.5" class="coordinate">e</text>
+        <text x="48" y="99" font-size="2.5" class="coordinate">d</text>
+        <text x="35.5" y="99" font-size="2.5" class="coordinate">c</text>
+        <text x="23" y="99" font-size="2.5" class="coordinate">b</text>
+        <text x="10.5" y="99" font-size="2.5" class="coordinate">a</text>
+      </svg>
+
+    <div class="pieces absolute inset-0">
+      @for (piece of pieces(); track $index) {
+        <div class="piece absolute transition-transform"
+        [style.background-image]="'url(' + piece.image + ')'"
+        [style.background-size]="'100%'"
+        [style.zIndex]="draggingPiece()?.id === piece.id ? 10 : 1"
+        [style.left.%]="draggingPiece()?.id === piece.id ? dragX() : piece.col * 12.5"
+        [style.top.%]="draggingPiece()?.id === piece.id ? dragY() : piece.row * 12.5"
+        (mousedown)="onPieceMouseDown($event, piece)"
+        (touchstart)="onPieceMouseDown($event, piece)"
+        ></div>
+      }
+    </div>
+    </div>
+  </div>
+  <div class="board-layout-player-bottom pr-2 flex justify-end transition-[width] ease-in-out">
+    <mc-avatar [label]="me()!.username" [username]="me()!.username" />
+  </div>
+</div>

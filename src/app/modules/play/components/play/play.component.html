@@ -1,1 +1,6 @@
-<p>play works!</p>
+<!-- TODO: Work on showing the waiting for opponent modal -->
+@if (opponent() && me() && whoIsBlackPlayer()) {
+  <div class="h-full">
+    <app-chessboard [opponent]="opponent()!" [me]="me()!" [whoIsBlackPlayer]="whoIsBlackPlayer()!" />
+  </div>
+}
