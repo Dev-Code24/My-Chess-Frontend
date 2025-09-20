@@ -1,20 +1,20 @@
 <button
-  [routerLink]="href()"
+  [type]="buttonType()"
   [ngClass]="getButtonClass()"
   [disabled]="isDisabled() || isLoading()">
   @if (!isLoading()) {
     @if (icon()) {
       <span
-        [ngClass]="{
+        [ngClass]=" {
           'text-sm sm:text-base': buttonSize() === 'sm',
           'text-base sm:text-xl': buttonSize() === 'md',
           'text-xl sm:text-2xl': buttonSize() === 'lg',
           'text-4xl md:text-5xl': buttonSize() === 'accent',
         }">
-        <fa-icon [icon]="icon()!"/>
+        <fa-icon [icon]="icon()!" />
       </span>
     }
-    <span class="mc-link-button-label"
+    <span
       [ngClass]="{
         'text-sm sm:text-base': buttonSize() === 'sm',
         'text-base sm:text-xl': buttonSize() === 'md',
@@ -28,11 +28,10 @@
       [icon]="spinnerIcon"
       animation="spin"
       [ngClass]="{
-        'text-base': buttonSize() === 'sm',
+        'text-sm sm:text-base': buttonSize() === 'sm',
         'text-base sm:text-xl': buttonSize() === 'md',
         'text-xl sm:text-2xl': buttonSize() === 'lg',
         'text-4xl md:text-5xl': buttonSize() === 'accent',
       }" />
   }
 </button>
-

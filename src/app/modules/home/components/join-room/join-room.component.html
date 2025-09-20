@@ -1,0 +1,32 @@
+<div class="join-room-form-container h-full">
+  <div class="join-room-form-header flex justify-center items-center">
+    <span class="text-sm sm:text-2xl font-semibold select-none">⬇️ Enter the room code your friend shared ⬇️</span>
+  </div>
+  <div class="join-room-form pt-6">
+    <form
+      class="flex justify-center items-center flex-col px-[1.5rem] sm:px-[3.75rem]"
+      (ngSubmit)="onSubmit()">
+      <div class="join-room-form-room-id-inputs flex gap-3">
+        @for (_ of [].constructor(6); track $index) {
+          <input
+          #inputRef
+          required
+          type="text"
+          pattern=".+"
+          class="text-5xl font-semibold rounded-md text-lime-900 w-[40px] h-[50px] sm:w-[70px] sm:h-[80px] p-3 border-none
+          outline outline-lime-400 bg-transparent valid:bg-lime-100 valid:outline-lime-100 text-center"
+          (input)="onInputChange($event, $index)"
+          (keydown)="onBackspace($event, $index)"
+          >
+        }
+      </div>
+      <mc-button
+      label="Join"
+      buttonType="submit"
+      class="w-full pt-3"
+      [isDisabled]="isFormInvalid()"
+      [isLoading]="isLoading()"
+      buttonSize="md" />
+    </form>
+  </div>
+</div>

@@ -1,7 +1,6 @@
-import { Component, ContentChildren, ElementRef, input, QueryList, ViewChild, ViewChildren, AfterViewInit, OnDestroy, effect, signal, output } from '@angular/core';
-import { Subject, takeUntil } from 'rxjs';
-
-import { SubSink } from '@shared/@utils/Subsink';
+import {
+  Component, input, OnDestroy, effect, signal, output, viewChildren, contentChildren, ElementRef
+} from '@angular/core';
 import { TabViewPanelComponent } from './tabview-panel/tabview-panel.component';
 
 @Component({
@@ -9,13 +8,10 @@ import { TabViewPanelComponent } from './tabview-panel/tabview-panel.component';
   imports: [],
   templateUrl: './tabview.component.html',
 })
-export class TabViewComponent implements AfterViewInit, OnDestroy {
-  @ContentChildren(TabViewPanelComponent) panels!: QueryList<TabViewPanelComponent>;
-  @ViewChildren('tabRef') tabRefs!: QueryList<ElementRef>;
-  @ViewChild('headerWrapper') headerWrapper!: ElementRef<HTMLElement>;
-
-  private subsink = new SubSink();
-  private destroy$ = new Subject<void>();
+export class TabViewComponent implements OnDestroy {
+  public panels = contentChildren(TabViewPanelComponent);
+  public tabRefs = viewChildren<ElementRef>('tabRef');
+  public headerWrapper = viewChildren<ElementRef>('headerWrapper');
   private resizeObserver: ResizeObserver | undefined;
 
   public activeIndex = input<number>(0);
@@ -39,59 +35,55 @@ export class TabViewComponent implements AfterViewInit, OnDestroy {
       this.currentIndex.set(index);
       setTimeout(() => this.updateIndicator(), 0);
     });
-  }
-
-  public ngAfterViewInit() {
-    setTimeout(() => {
-      this.tabChange(this.currentIndex());
-      this.setupResizeObserver();
-      setTimeout(() => this.indicator.update(current => ({ ...current, ready: true })), 50);
-    }, 0);
-
-    this.subsink.sink = this.panels.changes.pipe(takeUntil(this.destroy$)).subscribe(() => {
-      setTimeout(() => this.updateIndicator(), 0);
+    effect(() => {
+      setTimeout(() => { this.tabChange(this.currentIndex()); }, 0);
+    });
+    effect(() => {
+      const wrapper = this.headerWrapper();
+      if (wrapper.length) { this.setupResizeObserver(wrapper[0].nativeElement); }
+    });
+    effect(() => {
+      const tabs = this.tabRefs();
+      if (tabs.length) {
+        setTimeout(() => this.indicator.update(current => ({ ...current, ready: true })), 50);
+      }
     });
   }
 
   public ngOnDestroy() {
-    this.destroy$.next();
-    this.destroy$.complete();
     this.resizeObserver?.disconnect();
-    this.subsink.unsubscribeAll();
-    this.panels.forEach(panel => panel.active = false);
+    this.panels().forEach(panel => panel.active = false);
   }
 
   public tabChange(index: number): void {
-    if (index < 0 || index >= this.panels.length) return;
+    const panels = this.panels();
+    if (index < 0 || index >= panels.length) { return; }
 
     if (this.currentIndex() !== index) this.onTabChange.emit(index);
     this.currentIndex.set(index);
-    this.panels.forEach((panel, i) => panel.active = (i === index));
+    panels.forEach((panel, i) => panel.active = (i === index));
     requestAnimationFrame(() => this.updateIndicator());
   }
 
   public get tabHeaders(): string[] {
-    return this.panels?.map(panel => panel.header()) || [];
+    return this.panels().map(panel => panel.header()) || [];
   }
 
-  private setupResizeObserver(): void {
-    if (typeof ResizeObserver !== 'undefined') {
+  private setupResizeObserver(element: HTMLElement): void {
+    if (typeof ResizeObserver !== 'undefined' && !this.resizeObserver) {
       this.resizeObserver = new ResizeObserver(() => {
         this.updateIndicator();
       });
-
-      if (this.headerWrapper?.nativeElement) {
-        this.resizeObserver.observe(this.headerWrapper.nativeElement);
-      }
+      this.resizeObserver.observe(element);
     }
   }
 
   private updateIndicator(): void {
     const activeIdx = this.currentIndex();
-    const tab = this.tabRefs.get(activeIdx)?.nativeElement;
-    const wrapper = this.headerWrapper?.nativeElement;
+    const tab = this.tabRefs().at(activeIdx)?.nativeElement;
+    const wrapper = this.headerWrapper().at(0)?.nativeElement;
 
-    if (!tab || !wrapper) return;
+    if (!tab || !wrapper) { return; }
 
     const tabRect = tab.getBoundingClientRect();
     const wrapperRect = wrapper.getBoundingClientRect();

@@ -22,15 +22,11 @@
         </div>
       </div>
       <div class="w-full flex justify-center items-center">
-        <button
-          class="w-full p-4 rounded-sm font-bold"
-          type="submit"
-          [ngClass]="[
-            loginForm.valid ? `${CONSTANTS.bg.bg_300} cursor-pointer` : 'bg-lime-100 cursor-not-allowed',
-            ]"
-          [disabled]="loginForm.invalid">
-            {{ CONSTANTS.SUBMIT }}
-        </button>
+        <mc-button
+          [label]="CONSTANTS.SUBMIT"
+          [isDisabled]="loginForm.invalid"
+          buttonType="submit"
+          class="w-full" />
       </div>
     </form>
   </div>

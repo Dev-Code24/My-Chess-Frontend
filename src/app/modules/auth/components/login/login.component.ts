@@ -7,10 +7,11 @@ import { AuthForm } from '../../@interface';
 import { LOGIN } from '../../@utils/constants';
 import { COLORS } from '@shared/@utils/constants';
 import { faEye, faEyeSlash } from '@fortawesome/free-regular-svg-icons';
+import { ButtonComponent } from "@shared/components/button/button";
 
 @Component({
   selector: 'mc-login',
-  imports: [ CommonModule, ReactiveFormsModule, FontAwesomeModule],
+  imports: [CommonModule, ReactiveFormsModule, FontAwesomeModule, ButtonComponent],
   templateUrl: './login.component.html',
 })
 export class LoginComponent {
@@ -25,7 +26,7 @@ export class LoginComponent {
   ];
   protected loginForm = this.formBuilder.nonNullable.group({
     email: this.formBuilder.control<string>('', [Validators.required, Validators.email]),
-    password: this.formBuilder.control<string>('', [Validators.required, Validators.minLength(4)])
+    password: this.formBuilder.control<string>('', [Validators.required, Validators.minLength(6)])
   });
 
   public submitLoginForm = output <AuthForm>();

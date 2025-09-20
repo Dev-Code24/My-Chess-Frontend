@@ -18,11 +18,11 @@ export class AppComponent implements OnInit, OnDestroy {
   protected user = signal<UserInterface>(DEFAULT_USER_DATA);
 
   private readonly stateManagerService = inject(StateManagerService);
-  private subsink = new SubSink();
+  private readonly subsink = new SubSink();
 
   public ngOnInit(): void {
     this.subsink.sink = this.stateManagerService.user$.subscribe({
-      next: (value) => { this.user.set(value); },
+      next: (value) => this.user.set(value),
     });
   }
 
