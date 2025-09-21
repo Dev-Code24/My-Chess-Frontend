@@ -1,1 +1,1 @@
-export { isValidMove } from "./utils";
+export { validateMove, getTargetPiece } from "./utils";

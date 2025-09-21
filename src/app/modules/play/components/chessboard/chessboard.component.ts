@@ -2,7 +2,7 @@ import { Component, computed, effect, ElementRef, input, signal, viewChild } fro
 import { Piece, PieceColor } from './../../@interfaces/index';
 import { AvatarComponent } from "@shared/components/avatar/avatar.component";
 import { UserDetails } from '@shared/@interface';
-import { isValidMove } from '../../@utils';
+import { validateMove, getTargetPiece } from '../../@utils';
 
 @Component({
   selector: 'app-chessboard',
@@ -54,9 +54,8 @@ export class ChessboardComponent {
       }
 
       if (selectedPiece) {
-        const targetPiece = this.getTargetPiece(targetRow, targetCol, selectedPiece);
-        const isValid = isValidMove(targetRow, targetCol, this.myColor(), selectedPiece, targetPiece);
-        if (isValid) { this.updatePiece(targetRow, targetCol, selectedPiece, targetPiece); }
+        const validMove = validateMove(targetRow, targetCol, this.myColor(), this.pieces(), selectedPiece);
+        if (validMove.valid) { this.updatePiece(targetRow, targetCol, selectedPiece); }
         this.resetSelectedPiece();
       }
     }
@@ -134,14 +133,12 @@ export class ChessboardComponent {
       const y = clientY - rect.top;
       const targetCol = Math.min(7, Math.max(0, Math.floor((x / rect.width) * 8)));
       const targetRow = Math.min(7, Math.max(0, Math.floor((y / rect.height) * 8)));
+      const validMove = validateMove(targetRow, targetCol, this.myColor(), this.pieces(), piece);
 
-      const targetPiece = this.getTargetPiece(targetRow, targetCol, piece);
-      const isValid = isValidMove(targetRow, targetCol, this.myColor(), piece, targetPiece);
-
-      if (isValid) {
-        this.updatePiece(targetRow, targetCol, piece, targetPiece);
+      if (validMove.valid) {
+        this.updatePiece(targetRow, targetCol, piece);
       } else {
-        this.updatePiece(this.startRowCol()!.row, this.startRowCol()!.col, piece, targetPiece);
+        this.updatePiece(this.startRowCol()!.row, this.startRowCol()!.col, piece);
       }
 
       if (!(targetRow === piece.row && targetCol === piece.col)) {
@@ -200,19 +197,14 @@ export class ChessboardComponent {
   private updatePiece(
     targetRow: number,
     targetCol: number,
-    piece: Piece,
-    targetPiece: Piece | null | undefined
+    piece: Piece
   ): void {
+    const targetPiece = getTargetPiece(targetRow, targetCol, this.pieces(), piece);
     this.pieces.update(arr => {
       let newArr = [...arr];
       if (targetPiece) { newArr = newArr.filter(p => p.id !== targetPiece!.id); }
       return newArr.map(p => p.id === piece.id ? { ...p, row: targetRow, col: targetCol } : p);
     });
-  }
-
-  private getTargetPiece(targetRow: number, targetCol: number, piece: Piece): Piece | null | undefined {
-    const targetPiece = this.pieces().find(p => p.col === targetCol && p.row === targetRow);
-    return targetPiece?.color === piece.color ? null : targetPiece;
   }
 
   private resetSelectedPiece(): void {

@@ -11,5 +11,12 @@ export interface Piece {
   image: string;
 }
 
+export interface Move {
+  valid: boolean;
+  capture?: Piece | null;
+  promotion?: boolean;
+  castling?: 'king' | 'queen';
+}
+
 export interface RoomDetailsApiResponseAttribute extends RoomDetails { }
 export interface RoomDetailsApiResponse extends BasicApiResponse<RoomDetailsApiResponseAttribute> { }
