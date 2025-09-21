@@ -9,9 +9,17 @@ export function getPawnDirection(color: PieceColor, myColor: PieceColor): number
   }
 }
 
-export function isValidMove(piece: Piece, targetPiece: Piece | undefined | null, myColor: PieceColor, targetRow: number, targetCol: number): Piece | null {
+export function isValidMove(
+  targetRow: number,
+  targetCol: number,
+  myColor: PieceColor,
+  piece: Piece,
+  targetPiece: Piece | undefined | null
+): Piece | null {
   const rowDiff = targetRow - piece.row;
   const colDiff = targetCol - piece.col;
+
+  if (rowDiff === 0 && colDiff === 0) { return piece; }
 
   switch (piece.type) {
     case 'pawn': {

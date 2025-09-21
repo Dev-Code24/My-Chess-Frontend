@@ -15,17 +15,18 @@ export class ChessboardComponent {
   public me = input.required<UserDetails>();
   public whoIsBlackPlayer = input.required<'me' | 'opponent'>();
 
+  protected myColor = computed<PieceColor>(() => this.whoIsBlackPlayer() === 'me' ? 'b' : 'w');
   protected pieces = signal<Piece[]>([]);
-  protected dragOffset = signal<{ x: number, y: number }>({ x: 0, y: 0 });
   protected draggingPiece = signal<Piece | null>(null);
+  protected selectedPiece = signal<Piece | null>(null);
   protected dragX = signal(0);
   protected dragY = signal(0);
+  protected hoverSquareRow = signal(0);
+  protected hoverSquareCol = signal(0);
+  protected isHoverSquareVisible = signal(false);
 
+  private chessBoard = viewChild<ElementRef<HTMLDivElement>>('chessBoardRef');
   private startRowCol = signal<{ row: number; col: number } | null>(null);
-  private chessBoardRef = viewChild<ElementRef<HTMLDivElement>>('chessBoard');
-  private myColor = computed<PieceColor>(() => {
-    return this.whoIsBlackPlayer() === 'me' ? 'b' : 'w';
-  });
 
   constructor() {
     this.onMouseMove = this.onMouseMove.bind(this);
@@ -35,22 +36,65 @@ export class ChessboardComponent {
     });
   }
 
-  protected onPieceMouseDown(event: MouseEvent | TouchEvent, piece: Piece) {
-    event.preventDefault();
-    const clientX = 'touches' in event ? event.touches[0].clientX : event.clientX;
-    const clientY = 'touches' in event ? event.touches[0].clientY : event.clientY;
-    const board = this.chessBoardRef();
+  protected onBoardClick(event: MouseEvent): void {
+    const board = this.chessBoard();
+    const selectedPiece = this.selectedPiece();
+    const draggingPiece = this.draggingPiece();
     if (board) {
       const rect = board.nativeElement.getBoundingClientRect();
+      const x = event.clientX - rect.left;
+      const y = event.clientY - rect.top;
+      const targetCol = Math.min(7, Math.max(0, Math.floor((x / rect.width) * 8)));
+      const targetRow = Math.min(7, Math.max(0, Math.floor((y / rect.height) * 8)));
+
+      if (!draggingPiece && !selectedPiece) {
+        const piece = this.pieces().find(p => p.row === targetRow && p.col === targetCol);
+        if (piece && piece.color === this.myColor()) { this.selectedPiece.set(piece); }
+        return;
+      }
+
+      if (selectedPiece) {
+        const targetPiece = this.getTargetPiece(targetRow, targetCol, selectedPiece);
+        const isValid = isValidMove(targetRow, targetCol, this.myColor(), selectedPiece, targetPiece);
+        if (isValid) { this.updatePiece(targetRow, targetCol, selectedPiece, targetPiece); }
+        this.resetSelectedPiece();
+      }
+    }
+  }
+
+  protected onBoardMouseMove(event: MouseEvent): void {
+    const board = this.chessBoard();
+    const selectedPiece = this.selectedPiece();
+    const draggingPiece = this.draggingPiece();
+
+    if (board && (selectedPiece || draggingPiece)) {
+      const rect = board.nativeElement.getBoundingClientRect();
+      const x = event.clientX - rect.left;
+      const y = event.clientY - rect.top;
+
+      this.hoverSquareCol.set(Math.min(7, Math.max(0, Math.floor((x / rect.width) * 8))));
+      this.hoverSquareRow.set(Math.min(7, Math.max(0, Math.floor((y / rect.height) * 8))));
+      this.isHoverSquareVisible.set(true);
+    }
+  }
+
+  protected onBoardMouseLeave(): void {
+    this.isHoverSquareVisible.set(false);
+  }
+
+  protected onPieceMouseDown(event: MouseEvent | TouchEvent, piece: Piece) {
+    event.preventDefault();
+    event.stopPropagation();
+    const board = this.chessBoard();
+
+    if ((piece.color === this.myColor()) && board) {
+      const grabbedPiece = (event.target as HTMLDivElement);
+      grabbedPiece.style.cursor = 'grabbing';
 
       this.draggingPiece.set(piece);
       this.startRowCol.set({ row: piece.row, col: piece.col });
       this.dragX.set(piece.col * 12.5);
       this.dragY.set(piece.row * 12.5);
-      this.dragOffset.set({
-        x: clientX - rect.left - (piece.col + 0.5) * (rect.width / 8),
-        y: clientY - rect.top - (piece.row + 0.5) * (rect.height / 8),
-      });
       window.addEventListener('mousemove', this.onMouseMove);
       window.addEventListener('mouseup', this.onMouseUp);
       window.addEventListener('touchmove', this.onMouseMove, { passive: false });
@@ -60,13 +104,11 @@ export class ChessboardComponent {
 
   protected onMouseMove(event: MouseEvent | TouchEvent) {
     const piece = this.draggingPiece();
-    if (!piece) { return; }
+    const board = this.chessBoard();
 
-    const clientX = 'touches' in event ? event.touches[0].clientX : event.clientX;
-    const clientY = 'touches' in event ? event.touches[0].clientY : event.clientY;
-    const board = this.chessBoardRef();
-
-    if (board) {
+    if (piece && board) {
+      const clientX = 'touches' in event ? event.touches[0].clientX : event.clientX;
+      const clientY = 'touches' in event ? event.touches[0].clientY : event.clientY;
       const rect = board.nativeElement.getBoundingClientRect();
       const cursorX = ((clientX - rect.left) / rect.width) * 100;
       const cursorY = ((clientY - rect.top) / rect.height) * 100;
@@ -79,12 +121,13 @@ export class ChessboardComponent {
 
   protected onMouseUp(event: MouseEvent | TouchEvent) {
     const piece = this.draggingPiece();
-    if (!piece) return;
+    const board = this.chessBoard();
 
-    const board = this.chessBoardRef();
-    if (board) {
+    if (piece && board) {
+      const grabbedPiece = (event.target as HTMLDivElement);
+      grabbedPiece.style.cursor = 'grab';
+
       const rect = board.nativeElement.getBoundingClientRect();
-
       const clientX = 'touches' in event ? event.changedTouches[0].clientX : event.clientX;
       const clientY = 'touches' in event ? event.changedTouches[0].clientY : event.clientY;
       const x = clientX - rect.left;
@@ -92,26 +135,20 @@ export class ChessboardComponent {
       const targetCol = Math.min(7, Math.max(0, Math.floor((x / rect.width) * 8)));
       const targetRow = Math.min(7, Math.max(0, Math.floor((y / rect.height) * 8)));
 
-      let targetPiece: Piece | undefined | null = this.pieces().find(p => p.col === targetCol && p.row === targetRow);
-      if (targetPiece) { targetPiece = targetPiece.color === piece.color ? null : targetPiece; }
+      const targetPiece = this.getTargetPiece(targetRow, targetCol, piece);
+      const isValid = isValidMove(targetRow, targetCol, this.myColor(), piece, targetPiece);
 
-      const isValid = isValidMove(piece, targetPiece, this.myColor(), targetRow, targetCol);
       if (isValid) {
-        this.pieces.update(arr => {
-          let newArr = [...arr];
-          if (targetPiece) { newArr = newArr.filter(p => p.id !== targetPiece!.id); }
-          return newArr.map(p => p.id === piece.id ? { ...p, row: targetRow, col: targetCol } : p);
-        });
+        this.updatePiece(targetRow, targetCol, piece, targetPiece);
       } else {
-        this.pieces.update(arr =>
-          arr.map(p => p.id === piece.id
-            ? { ...p, row: this.startRowCol()!.row, col: this.startRowCol()!.col }
-            : p)
-        );
+        this.updatePiece(this.startRowCol()!.row, this.startRowCol()!.col, piece, targetPiece);
       }
-      this.draggingPiece.set(null);
-      this.dragX.set(0);
-      this.dragY.set(0);
+
+      if (!(targetRow === piece.row && targetCol === piece.col)) {
+        setTimeout(() => this.resetSelectedPiece(), 0);
+      } else {
+        this.draggingPiece.set(null);
+      }
 
       window.removeEventListener('mousemove', this.onMouseMove);
       window.removeEventListener('mouseup', this.onMouseUp);
@@ -120,8 +157,7 @@ export class ChessboardComponent {
     }
   }
 
-
-  private initBoard() {
+  private initBoard(): void {
     const whiteBackRow = ['rook', 'knight', 'bishop', 'queen', 'king', 'bishop', 'knight', 'rook'];
     const blackBackRow = [...whiteBackRow];
     const boardOrientation = this.whoIsBlackPlayer() === 'me' ? 'flip' : 'normal';
@@ -135,16 +171,16 @@ export class ChessboardComponent {
     }
   }
 
-  private addPieces(color: PieceColor, backRow: number, pawnRow: number, backRowPieces: string[]) {
+  private addPieces(color: PieceColor, backRow: number, pawnRow: number, backRowPieces: string[]): void {
     const pieces: Piece[] = [];
     backRowPieces.forEach((type, col) => {
       pieces.push({
         id: `${color}-${type}-${col}`,
         type: type as Piece['type'],
-        color,
         row: backRow,
+        image: `/${color}${type === 'knight' ? 'n' : type.charAt(0)}.png`,
+        color,
         col,
-        image: `/${color}${type === 'knight' ? 'n' : type.charAt(0)}.png`
       });
     });
 
@@ -159,5 +195,31 @@ export class ChessboardComponent {
       });
     }
     this.pieces.update((array) => [...array, ...pieces]);
+  }
+
+  private updatePiece(
+    targetRow: number,
+    targetCol: number,
+    piece: Piece,
+    targetPiece: Piece | null | undefined
+  ): void {
+    this.pieces.update(arr => {
+      let newArr = [...arr];
+      if (targetPiece) { newArr = newArr.filter(p => p.id !== targetPiece!.id); }
+      return newArr.map(p => p.id === piece.id ? { ...p, row: targetRow, col: targetCol } : p);
+    });
+  }
+
+  private getTargetPiece(targetRow: number, targetCol: number, piece: Piece): Piece | null | undefined {
+    const targetPiece = this.pieces().find(p => p.col === targetCol && p.row === targetRow);
+    return targetPiece?.color === piece.color ? null : targetPiece;
+  }
+
+  private resetSelectedPiece(): void {
+    this.selectedPiece.set(null);
+    this.draggingPiece.set(null);
+    this.isHoverSquareVisible.set(false);
+    this.dragX.set(0);
+    this.dragY.set(0);
   }
 }

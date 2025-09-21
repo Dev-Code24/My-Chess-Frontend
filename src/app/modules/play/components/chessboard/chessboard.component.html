@@ -3,7 +3,12 @@
     <mc-avatar [label]="opponent()!.username" [username]="opponent()!.username" />
   </div>
   <div class="board-layout-board flex items-center justify-center">
-    <div #chessBoard class="chess-board relative aspect-square" [class.flip]="whoIsBlackPlayer() === 'me'">
+    <div #chessBoardRef
+      class="chess-board relative aspect-square rounded-md"
+      [class.flip]="whoIsBlackPlayer() === 'me'"
+      (click)="onBoardClick($event)"
+      (mousemove)="onBoardMouseMove($event)"
+      (mouseleave)="onBoardMouseLeave()">
       <svg
         class="coordinates absolute left-[0] top-[0]"
         viewBox="0 0 100 100" aria-hidden="true">
@@ -25,19 +30,37 @@
         <text x="10.5" y="99" font-size="2.5" class="coordinate">a</text>
       </svg>
 
-    <div class="pieces absolute inset-0">
-      @for (piece of pieces(); track $index) {
-        <div class="piece absolute transition-transform"
-        [style.background-image]="'url(' + piece.image + ')'"
-        [style.background-size]="'100%'"
-        [style.zIndex]="draggingPiece()?.id === piece.id ? 10 : 1"
-        [style.left.%]="draggingPiece()?.id === piece.id ? dragX() : piece.col * 12.5"
-        [style.top.%]="draggingPiece()?.id === piece.id ? dragY() : piece.row * 12.5"
-        (mousedown)="onPieceMouseDown($event, piece)"
-        (touchstart)="onPieceMouseDown($event, piece)"
-        ></div>
-      }
-    </div>
+      <div
+        class="hover-square absolute pointer-events-none w-[12.5%] h-[12.5%]"
+        [style.visibility]="isHoverSquareVisible() ? 'visible' : 'hidden'"
+        [style.left.%]="hoverSquareCol() * 12.5" [style.top.%]="hoverSquareRow() * 12.5">
+        <svg viewBox="0 0 100 100" class="w-full h-full">
+          <rect
+            x="-0.25" y="0" width="100" height="100"
+            fill="none"
+            stroke-width="10"
+            stroke="rgba(255, 255, 255, 0.95)"
+            shape-rendering="crispEdges"
+            vector-effect="non-scaling-stroke"
+          />
+        </svg>
+      </div>
+
+      <div class="pieces absolute inset-0">
+        @for (piece of pieces(); track $index) {
+          <div
+            class="piece absolute transition-transform"
+            [style.background-size]="'100%'"
+            [style.background-image]="'url(' + piece.image + ')'"
+            [style.cursor]="myColor() === piece.color ? 'grab' : ''"
+            [style.zIndex]="draggingPiece()?.id === piece.id ? 10 : 1"
+            [style.left.%]="draggingPiece()?.id === piece.id ? dragX() : piece.col * 12.5"
+            [style.top.%]="draggingPiece()?.id === piece.id ? dragY() : piece.row * 12.5"
+            (mousedown)="onPieceMouseDown($event, piece)"
+            (touchstart)="onPieceMouseDown($event, piece)">
+          </div>
+        }
+      </div>
     </div>
   </div>
   <div class="board-layout-player-bottom pr-2 flex justify-end transition-[width] ease-in-out">

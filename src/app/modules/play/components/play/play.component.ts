@@ -25,7 +25,7 @@ export class PlayComponent implements OnInit {
 
   public ngOnInit(): void {
     this.me.set(this.stateManagerService.getUser().details!);
-    // this.getLiveRoomDetails();
+    this.getLiveRoomDetails();
     this.getRoomDetails();
   }
 

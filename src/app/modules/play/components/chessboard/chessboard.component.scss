@@ -40,7 +40,6 @@ $white-tile: #ebecd0;
   .pieces {
     .piece {
       user-select: none;
-      cursor: grab;
       width: 12.5%;
       height: 12.5%;
     }
@@ -52,7 +51,7 @@ $white-tile: #ebecd0;
 
     .pieces,
     .coordinates {
-      transform: rotate(270deg); // rotates pieces & coordinates back upright
+      transform: rotate(270deg);
 
       .coordinate {
         font-weight: 600;
