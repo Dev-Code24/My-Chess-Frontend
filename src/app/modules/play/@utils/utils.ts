@@ -19,13 +19,11 @@ export function validateMove(
   piece: Piece,
 ): Move {
   const targetPiece = getTargetPiece(targetRow, targetCol, allPieces, piece);
-  if (targetPiece === null) return { valid: false }; // own piece blocks
+  if (targetPiece === null) return { valid: false };
 
   const rowDiff = targetRow - piece.row;
   const colDiff = targetCol - piece.col;
-  const response: Move = {
-    valid: false,
-  };
+  const response: Move = { valid: false };
 
   switch (piece.type) {
     case 'pawn': {
@@ -243,7 +241,6 @@ function isPathClear(
 ): boolean {
   const rowStep = targetRow === startRow ? 0 : (targetRow > startRow ? 1 : -1);
   const colStep = targetCol === startCol ? 0 : (targetCol > startCol ? 1 : -1);
-
   let row = startRow + rowStep;
   let col = startCol + colStep;
 

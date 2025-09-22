@@ -1,8 +1,10 @@
-import { Component, computed, effect, ElementRef, input, signal, viewChild } from '@angular/core';
+import { Component, computed, effect, ElementRef, input, OnDestroy, signal, viewChild } from '@angular/core';
 import { Piece, PieceColor, Move } from './../../@interfaces';
 import { AvatarComponent } from "@shared/components/avatar/avatar.component";
 import { UserDetails } from '@shared/@interface';
 import { validateMove, getTargetPiece } from '../../@utils';
+import { SubSink } from '@shared/@utils';
+import { timer } from 'rxjs';
 
 @Component({
   selector: 'app-chessboard',
@@ -10,10 +12,10 @@ import { validateMove, getTargetPiece } from '../../@utils';
   templateUrl: './chessboard.component.html',
   styleUrl: './chessboard.component.scss'
 })
-export class ChessboardComponent {
-  public opponent = input.required<UserDetails>();
-  public me = input.required<UserDetails>();
-  public whoIsBlackPlayer = input.required<'me' | 'opponent'>();
+export class ChessboardComponent implements OnDestroy {
+  public readonly opponent = input.required<UserDetails>();
+  public readonly me = input.required<UserDetails>();
+  public readonly whoIsBlackPlayer = input.required<'me' | 'opponent'>();
 
   protected myColor = computed<PieceColor>(() => this.whoIsBlackPlayer() === 'me' ? 'b' : 'w');
   protected pieces = signal<Piece[]>([]);
@@ -27,6 +29,7 @@ export class ChessboardComponent {
 
   private chessBoard = viewChild<ElementRef<HTMLDivElement>>('chessBoardRef');
   private startRowCol = signal<{ row: number; col: number } | null>(null);
+  private readonly subsink = new SubSink()
 
   constructor() {
     this.onMouseMove = this.onMouseMove.bind(this);
@@ -34,6 +37,10 @@ export class ChessboardComponent {
     effect(() => {
       this.initBoard();
     });
+  }
+
+  public ngOnDestroy(): void {
+    this.subsink.unsubscribeAll();
   }
 
   protected onBoardClick(event: MouseEvent): void {
@@ -86,7 +93,7 @@ export class ChessboardComponent {
     event.stopPropagation();
     const board = this.chessBoard();
 
-    if ((piece.color === this.myColor() || 1) && board) {
+    if (piece.color === this.myColor() && board) {
       const grabbedPiece = (event.target as HTMLDivElement);
       grabbedPiece.style.cursor = 'grabbing';
 
@@ -136,10 +143,9 @@ export class ChessboardComponent {
       const validMove = validateMove(targetRow, targetCol, this.myColor(), this.pieces(), piece);
 
       if (validMove.valid) { this.updatePiece(targetRow, targetCol, piece, validMove); }
-      console.log(validMove);
 
       if (!(targetRow === piece.row && targetCol === piece.col)) {
-        setTimeout(() => this.resetSelectedPiece(), 0);
+        this.subsink.sink = timer(0).subscribe(() => this.resetSelectedPiece());
       } else {
         this.draggingPiece.set(null);
       }
@@ -165,7 +171,12 @@ export class ChessboardComponent {
     }
   }
 
-  private addPieces(color: PieceColor, backRow: number, pawnRow: number, backRowPieces: string[]): void {
+  private addPieces(
+    color: PieceColor,
+    backRow: number,
+    pawnRow: number,
+    backRowPieces: string[]
+  ): void {
     const pieces: Piece[] = [];
     backRowPieces.forEach((type, col) => {
       pieces.push({
