@@ -196,7 +196,8 @@ export class ChessboardComponent implements OnDestroy {
         color,
         row: pawnRow,
         col,
-        image: `/${color}p.png`
+        image: `/${color}p.png`,
+        enPassantAvailable: true,
       });
     }
     this.pieces.update((array) => [...array, ...pieces]);
@@ -209,20 +210,29 @@ export class ChessboardComponent implements OnDestroy {
     move: Move
   ): void {
     const targetPiece = getTargetPiece(targetRow, targetCol, this.pieces(), piece);
-    this.pieces.update(arr => {
-      let newArr = [...arr];
+    this.pieces.update(allPieces => {
+      let allOldPieces = [...allPieces];
       if (move.castling) {
         const rookCol = move.castling === 'kingside' ? 7 : 0;
         const newRookCol = move.castling === 'kingside' ? 5 : 3;
-        newArr = newArr.map(p => {
+
+        allOldPieces = allOldPieces.map(p => {
           if (p.type === 'rook' && p.row === piece.row && p.col === rookCol) {
             return { ...p, col: newRookCol, hasMoved: true };
           }
           return p;
         });
       }
-      if (targetPiece) { newArr = newArr.filter(p => p.id !== targetPiece!.id); }
-      return newArr.map(p => p.id === piece.id ? { ...p, row: targetRow, col: targetCol, hasMoved: true } : p);
+      if (move.enPassant) {
+        const capturedPawn = move.capture;
+        if (capturedPawn) { allOldPieces = allOldPieces.filter(p => p.id !== capturedPawn.id); }
+        allOldPieces = allOldPieces.map(p =>
+          p.id === piece.id ? { ...p, row: targetRow, col: targetCol, hasMoved: true } : p
+        );
+      }
+
+      if (targetPiece) { allOldPieces = allOldPieces.filter(p => p.id !== targetPiece!.id); }
+      return allOldPieces.map(p => p.id === piece.id ? { ...p, row: targetRow, col: targetCol, hasMoved: true } : p);
     });
   }
 

@@ -62,6 +62,26 @@ export function validateMove(
         return response;
       }
 
+      // En Passant
+      const enPassantRow = myColor === 'b' ? piece.color === 'w' ? 4 : 3 : piece.color === 'w' ? 3 : 4;
+      const enPassantTargetCol = piece.col + colDiff;
+      if (rowDiff === direction && Math.abs(colDiff) === 1 && targetRow - enPassantRow === direction) {
+        const enPassantPawn = allPieces.find(p =>
+          p.row === enPassantRow &&
+          p.col === enPassantTargetCol &&
+          p.type === 'pawn' &&
+          p.color !== piece.color &&
+          p.enPassantAvailable
+        );
+
+        if (enPassantPawn) {
+          response.valid = true;
+          response.capture = enPassantPawn;
+          response.enPassant = true;
+          return response;
+        }
+      }
+
       return response;
     }
 

@@ -10,6 +10,7 @@ export interface Piece {
   col: number;
   image: string;
   hasMoved?: boolean;
+  enPassantAvailable?: boolean;
 }
 
 export interface Move {
@@ -18,6 +19,7 @@ export interface Move {
   promotion?: boolean;
   castling?: 'kingside' | 'queenside';
   reason?: 'squareUnderAttack' | 'kingInCheckDuringCastling';
+  enPassant?: boolean;
 }
 
 export interface RoomDetailsApiResponseAttribute extends RoomDetails { }
