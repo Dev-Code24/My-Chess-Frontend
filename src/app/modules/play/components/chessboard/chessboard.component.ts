@@ -1,5 +1,5 @@
 import { Component, computed, effect, ElementRef, input, signal, viewChild } from '@angular/core';
-import { Piece, PieceColor } from './../../@interfaces/index';
+import { Piece, PieceColor, Move } from './../../@interfaces';
 import { AvatarComponent } from "@shared/components/avatar/avatar.component";
 import { UserDetails } from '@shared/@interface';
 import { validateMove, getTargetPiece } from '../../@utils';
@@ -55,7 +55,7 @@ export class ChessboardComponent {
 
       if (selectedPiece) {
         const validMove = validateMove(targetRow, targetCol, this.myColor(), this.pieces(), selectedPiece);
-        if (validMove.valid) { this.updatePiece(targetRow, targetCol, selectedPiece); }
+        if (validMove.valid) { this.updatePiece(targetRow, targetCol, selectedPiece, validMove); }
         this.resetSelectedPiece();
       }
     }
@@ -86,7 +86,7 @@ export class ChessboardComponent {
     event.stopPropagation();
     const board = this.chessBoard();
 
-    if ((piece.color === this.myColor()) && board) {
+    if ((piece.color === this.myColor() || 1) && board) {
       const grabbedPiece = (event.target as HTMLDivElement);
       grabbedPiece.style.cursor = 'grabbing';
 
@@ -135,11 +135,8 @@ export class ChessboardComponent {
       const targetRow = Math.min(7, Math.max(0, Math.floor((y / rect.height) * 8)));
       const validMove = validateMove(targetRow, targetCol, this.myColor(), this.pieces(), piece);
 
-      if (validMove.valid) {
-        this.updatePiece(targetRow, targetCol, piece);
-      } else {
-        this.updatePiece(this.startRowCol()!.row, this.startRowCol()!.col, piece);
-      }
+      if (validMove.valid) { this.updatePiece(targetRow, targetCol, piece, validMove); }
+      console.log(validMove);
 
       if (!(targetRow === piece.row && targetCol === piece.col)) {
         setTimeout(() => this.resetSelectedPiece(), 0);
@@ -197,13 +194,24 @@ export class ChessboardComponent {
   private updatePiece(
     targetRow: number,
     targetCol: number,
-    piece: Piece
+    piece: Piece,
+    move: Move
   ): void {
     const targetPiece = getTargetPiece(targetRow, targetCol, this.pieces(), piece);
     this.pieces.update(arr => {
       let newArr = [...arr];
+      if (move.castling) {
+        const rookCol = move.castling === 'kingside' ? 7 : 0;
+        const newRookCol = move.castling === 'kingside' ? 5 : 3;
+        newArr = newArr.map(p => {
+          if (p.type === 'rook' && p.row === piece.row && p.col === rookCol) {
+            return { ...p, col: newRookCol, hasMoved: true };
+          }
+          return p;
+        });
+      }
       if (targetPiece) { newArr = newArr.filter(p => p.id !== targetPiece!.id); }
-      return newArr.map(p => p.id === piece.id ? { ...p, row: targetRow, col: targetCol } : p);
+      return newArr.map(p => p.id === piece.id ? { ...p, row: targetRow, col: targetCol, hasMoved: true } : p);
     });
   }
 

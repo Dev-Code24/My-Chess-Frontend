@@ -23,79 +23,216 @@ export function validateMove(
 
   const rowDiff = targetRow - piece.row;
   const colDiff = targetCol - piece.col;
+  const response: Move = {
+    valid: false,
+  };
 
   switch (piece.type) {
     case 'pawn': {
       const direction = getPawnDirection(piece.color, myColor);
-      const startRow = piece.color === 'w'
-        ? (myColor === 'w' ? 6 : 1)
-        : (myColor === 'w' ? 1 : 6);
+      const startRow = piece.color === 'w' ? (myColor === 'w' ? 6 : 1) : (myColor === 'w' ? 1 : 6);
 
       // single forward
       if (!targetPiece && rowDiff === direction && colDiff === 0) {
-        return { valid: true, promotion: targetRow === (piece.color === 'w' ? 0 : 7) };
+        if (isSquareAttacked(targetRow, targetCol, myColor, allPieces)) {
+          response.reason = 'squareUnderAttack';
+        }
+        response.valid = true;
+        response.promotion = targetRow === (piece.color === 'w' ? 0 : 7);
+        return response;
       }
 
       // double forward from start
       if (!targetPiece && piece.row === startRow && rowDiff === 2 * direction && colDiff === 0) {
         const midRow = piece.row + direction;
         if (!allPieces.some(p => p.row === midRow && p.col === piece.col)) {
-          return { valid: true };
+          if (isSquareAttacked(targetRow, targetCol, myColor, allPieces)) {
+            response.reason = 'squareUnderAttack';
+          }
+          response.valid = true;
+          return response;
         }
       }
 
       // capture
       if (targetPiece && rowDiff === direction && Math.abs(colDiff) === 1) {
-        return { valid: true, capture: targetPiece };
+        if (isSquareAttacked(targetRow, targetCol, myColor, allPieces)) {
+          response.reason = 'squareUnderAttack';
+        }
+        response.valid = true;
+        response.capture = targetPiece;
+        return response;
       }
 
-      return { valid: false };
+      return response;
     }
 
     case 'rook':
       if (rowDiff === 0 || colDiff === 0) {
         if (isPathClear(piece.row, piece.col, targetRow, targetCol, allPieces)) {
-          return { valid: true, capture: targetPiece ?? undefined };
+          if (isSquareAttacked(targetRow, targetCol, myColor, allPieces)) {
+            response.reason = 'squareUnderAttack';
+          }
+          response.valid = true;
+          response.capture = targetPiece ?? undefined;
+          return response;
         }
       }
-      return { valid: false };
-
-    case 'bishop':
-      if (Math.abs(rowDiff) === Math.abs(colDiff)) {
-        if (isPathClear(piece.row, piece.col, targetRow, targetCol, allPieces)) {
-          return { valid: true, capture: targetPiece ?? undefined };
-        }
-      }
-      return { valid: false };
-
-    case 'queen':
-      if (rowDiff === 0 || colDiff === 0 || Math.abs(rowDiff) === Math.abs(colDiff)) {
-        if (isPathClear(piece.row, piece.col, targetRow, targetCol, allPieces)) {
-          return { valid: true, capture: targetPiece ?? undefined };
-        }
-      }
-      return { valid: false };
+      return response;
 
     case 'knight':
       if (
         (Math.abs(rowDiff) === 2 && Math.abs(colDiff) === 1) ||
         (Math.abs(rowDiff) === 1 && Math.abs(colDiff) === 2)
       ) {
-        return { valid: true, capture: targetPiece ?? undefined };
+        if (isSquareAttacked(targetRow, targetCol, myColor, allPieces)) {
+          response.reason = 'squareUnderAttack';
+        }
+        response.valid = true;
+        response.capture = targetPiece ?? undefined;
+        return response;
       }
-      return { valid: false };
+      return response;
 
-    case 'king':
-      if (Math.abs(rowDiff) <= 1 && Math.abs(colDiff) <= 1) {
-        return { valid: true, capture: targetPiece ?? undefined };
+    case 'bishop':
+      if (Math.abs(rowDiff) === Math.abs(colDiff)) {
+        if (isPathClear(piece.row, piece.col, targetRow, targetCol, allPieces)) {
+          if (isSquareAttacked(targetRow, targetCol, myColor, allPieces)) {
+            response.reason = 'squareUnderAttack';
+          }
+          response.valid = true;
+          response.capture = targetPiece ?? undefined;
+          return response;
+        }
       }
-      // Castling check could be added here
-      return { valid: false };
+      return response;
+
+    case 'queen':
+      if (rowDiff === 0 || colDiff === 0 || Math.abs(rowDiff) === Math.abs(colDiff)) {
+        if (isPathClear(piece.row, piece.col, targetRow, targetCol, allPieces)) {
+          if (isSquareAttacked(targetRow, targetCol, myColor, allPieces)) {
+            response.reason = 'squareUnderAttack';
+          }
+          response.valid = true;
+          response.capture = targetPiece ?? undefined;
+          return response;
+        }
+      }
+      return response;
+
+    case 'king': {
+      // Normal king move
+      if (Math.abs(rowDiff) <= 1 && Math.abs(colDiff) <= 1) {
+        if (isSquareAttacked(targetRow, targetCol, myColor, allPieces)) {
+          return { ...response, valid: false, reason: 'squareUnderAttack' };
+        }
+        response.valid = true;
+        return response;
+      }
+
+      // Castling
+      if (!piece.hasMoved && rowDiff === 0 && Math.abs(colDiff) === 2) {
+        const rookCol = colDiff > 0 ? 7 : 0;  // kingside vs queenside
+        const rook = allPieces.find((p) =>
+          p.type === 'rook' &&
+          p.row === piece.row &&
+          p.col === rookCol &&
+          p.color === piece.color && !p.hasMoved
+        );
+
+        if (!rook) { return response; }
+
+        // Path clear between king and rook?
+        const colStep = colDiff > 0 ? 1 : -1;
+        let clear = true;
+        for (let c = piece.col + colStep; c !== rookCol; c += colStep) {
+          if (allPieces.some(p => p.row === piece.row && p.col === c)) {
+            clear = false;
+            break;
+          }
+        }
+        if (!clear) { return response; }
+
+        if (
+          isSquareAttacked(piece.row, piece.col, myColor, allPieces) ||
+          isSquareAttacked(piece.row, piece.col + colStep, myColor, allPieces) ||
+          isSquareAttacked(piece.row, rookCol, myColor, allPieces)
+        ) {
+          return { ...response, valid: false, reason: 'kingInCheckDuringCastling' };
+        }
+        response.valid = true;
+        response.castling = colDiff > 0 ? 'kingside' : 'queenside';
+        return response;
+      }
+
+      return response;
+    }
 
     default:
-      return { valid: false };
+      return response;
   }
 }
+
+export function isSquareAttacked(
+  targetRow: number,
+  targetCol: number,
+  myColor: PieceColor,
+  allPieces: Piece[],
+): boolean {
+  for (const piece of allPieces) {
+    if (piece.color === myColor) { continue; }
+
+    const rowDiff = targetRow - piece.row;
+    const colDiff = targetCol - piece.col;
+
+    switch (piece.type) {
+      case 'pawn': {
+        const direction = getPawnDirection(piece.color, myColor);
+        if (Math.abs(colDiff) === 1 && rowDiff === direction) { return true; }
+        break;
+      }
+
+      case 'rook': {
+        if (rowDiff === 0 || colDiff === 0) {
+          if (isPathClear(piece.row, piece.col, targetRow, targetCol, allPieces)) { return true; }
+        }
+        break;
+      }
+
+      case 'knight': {
+        if (
+          (Math.abs(rowDiff) === 2 && Math.abs(colDiff) === 1) ||
+          (Math.abs(rowDiff) === 1 && Math.abs(colDiff) === 2)
+        ) {
+          return true;
+        }
+        break;
+      }
+
+      case 'bishop': {
+        if (Math.abs(rowDiff) === Math.abs(colDiff)) {
+          if (isPathClear(piece.row, piece.col, targetRow, targetCol, allPieces)) { return true; }
+        }
+        break;
+      }
+
+      case 'queen': {
+        if (rowDiff === 0 || colDiff === 0 || Math.abs(rowDiff) === Math.abs(colDiff)) {
+          if (isPathClear(piece.row, piece.col, targetRow, targetCol, allPieces)) { return true; }
+        }
+        break;
+      }
+
+      case 'king': {
+        if (Math.abs(rowDiff) <= 1 && Math.abs(colDiff) <= 1) { return true; }
+        break;
+      }
+    }
+  }
+
+  return false;
+}
+
 
 function isPathClear(
   startRow: number,

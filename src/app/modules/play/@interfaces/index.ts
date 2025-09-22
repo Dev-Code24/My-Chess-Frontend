@@ -9,13 +9,15 @@ export interface Piece {
   row: number;
   col: number;
   image: string;
+  hasMoved?: boolean;
 }
 
 export interface Move {
   valid: boolean;
   capture?: Piece | null;
   promotion?: boolean;
-  castling?: 'king' | 'queen';
+  castling?: 'kingside' | 'queenside';
+  reason?: 'squareUnderAttack' | 'kingInCheckDuringCastling';
 }
 
 export interface RoomDetailsApiResponseAttribute extends RoomDetails { }
