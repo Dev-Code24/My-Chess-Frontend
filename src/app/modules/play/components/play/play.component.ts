@@ -1,9 +1,9 @@
-import { Component, inject, input, OnInit, signal } from '@angular/core';
+import { Component, effect, inject, input, OnInit, signal } from '@angular/core';
 
 import { RoomDetails, UserDetails } from '@shared/@interface';
 import { SubSink } from '@shared/@utils/Subsink';
 import { PlayConnectBackendService } from 'modules/play/service/play-connect-backend.service';
-import { RoomDetailsApiResponse } from 'modules/play/@interfaces';
+import { RoomDetailsApiResponse, PieceMoved } from 'modules/play/@interfaces';
 import { StateManagerService } from '@shared/services';
 import { ChessboardComponent } from '../chessboard/chessboard.component';
 
@@ -14,7 +14,9 @@ import { ChessboardComponent } from '../chessboard/chessboard.component';
   styleUrl: './play.component.scss'
 })
 export class PlayComponent implements OnInit {
-  protected readonly roomId = input.required<string>();
+  public readonly roomId = input.required<string>();
+
+  protected roomNotification = signal<string | undefined>(undefined);
   protected opponent = signal<UserDetails | undefined>(undefined);
   protected me = signal<UserDetails | undefined>(undefined);
   protected whoIsBlackPlayer = signal<'me' | 'opponent' | undefined>(undefined);
@@ -23,8 +25,10 @@ export class PlayComponent implements OnInit {
   private readonly stateManagerService = inject(StateManagerService);
   private readonly connectBackend = inject(PlayConnectBackendService);
 
+  constructor() {
+    effect(() => this.me.set(this.stateManagerService.getUser().details!));
+  }
   public ngOnInit(): void {
-    this.me.set(this.stateManagerService.getUser().details!);
     this.getLiveRoomDetails();
     this.getRoomDetails();
   }
@@ -33,16 +37,27 @@ export class PlayComponent implements OnInit {
     this.subsink.unsubscribeAll();
   }
 
+  protected onPieceMoved(pieceMoved: PieceMoved): void {
+    this.subsink.sink = this.connectBackend.postPieceMoves(this.roomId(), pieceMoved).subscribe({
+      next: (data) => {
+        console.log(data);
+      },
+      error: (err) => console.error(err),
+    });
+  }
+
   private getLiveRoomDetails(): void {
     this.subsink.sink = this.connectBackend.getLiveRoomDetails(this.roomId()).subscribe({
-      next: (response: string | RoomDetails) => {
+      next: (response: string | RoomDetails | PieceMoved) => {
         if (typeof response === 'string') {
-          console.log('string:', response);
+          this.roomNotification.set(response);
+        } else if ('code' in response) {
+          this.assignPlayerRoles(response.blackPlayer, response.whitePlayer);
         } else {
-          console.log('object:', response);
+          console.log('opponent played', response);
         }
       },
-      error: (error: Event) => console.log(error)
+      error: (error: Event) => console.error(error)
     });
   }
 
@@ -51,16 +66,19 @@ export class PlayComponent implements OnInit {
       next: (response: RoomDetailsApiResponse) => {
         if (response && response.data) {
           const { data } = response;
-
-          if (data.blackPlayer && data.blackPlayer.email !== this.me()!.email) {
-            this.opponent.set(data.blackPlayer);
-            this.whoIsBlackPlayer.set('opponent');
-          } else if (data.whitePlayer && data.whitePlayer.email !== this.me()!.email) {
-            this.opponent.set(data.whitePlayer);
-            this.whoIsBlackPlayer.set('me');
-          }
+          this.assignPlayerRoles(data.blackPlayer, data.whitePlayer);
         }
       }
     });
+  }
+
+  private assignPlayerRoles(blackPlayer: UserDetails | null, whitePlayer: UserDetails | null): void {
+    if (blackPlayer && blackPlayer.email !== this.me()!.email) {
+      this.opponent.set(blackPlayer);
+      this.whoIsBlackPlayer.set('opponent');
+    } else if (whitePlayer && whitePlayer.email !== this.me()!.email) {
+      this.opponent.set(whitePlayer);
+      this.whoIsBlackPlayer.set('me');
+    }
   }
 }

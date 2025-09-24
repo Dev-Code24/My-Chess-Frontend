@@ -1,5 +1,5 @@
-import { Component, computed, effect, ElementRef, input, OnDestroy, signal, viewChild } from '@angular/core';
-import { Piece, PieceColor, Move } from './../../@interfaces';
+import { Component, computed, effect, ElementRef, input, OnDestroy, output, signal, viewChild } from '@angular/core';
+import { Piece, PieceColor, Move, PieceMoved } from './../../@interfaces';
 import { AvatarComponent } from "@shared/components/avatar/avatar.component";
 import { UserDetails } from '@shared/@interface';
 import { validateMove, getTargetPiece } from '../../@utils';
@@ -16,6 +16,7 @@ export class ChessboardComponent implements OnDestroy {
   public readonly opponent = input.required<UserDetails>();
   public readonly me = input.required<UserDetails>();
   public readonly whoIsBlackPlayer = input.required<'me' | 'opponent'>();
+  public pieceMoved = output<PieceMoved>();
 
   protected myColor = computed<PieceColor>(() => this.whoIsBlackPlayer() === 'me' ? 'b' : 'w');
   protected pieces = signal<Piece[]>([]);
@@ -75,11 +76,21 @@ export class ChessboardComponent implements OnDestroy {
 
     if (board && (selectedPiece || draggingPiece)) {
       const rect = board.nativeElement.getBoundingClientRect();
-      const x = event.clientX - rect.left;
-      const y = event.clientY - rect.top;
+      const isBoardFlipped = this.whoIsBlackPlayer() === 'me';
+      const fracX = (event.clientX - rect.left) / rect.width;
+      const fracY = (event.clientY - rect.top) / rect.height;
 
-      this.hoverSquareCol.set(Math.min(7, Math.max(0, Math.floor((x / rect.width) * 8))));
-      this.hoverSquareRow.set(Math.min(7, Math.max(0, Math.floor((y / rect.height) * 8))));
+      let col: number, row: number;
+      if (isBoardFlipped) {
+        row = 7 - Math.floor(fracX * 8);
+        col = Math.floor(fracY * 8);
+      } else {
+        row = Math.floor(fracY * 8);
+        col = Math.floor(fracX * 8);
+      }
+
+      this.hoverSquareCol.set(Math.min(7, Math.max(0, col)));
+      this.hoverSquareRow.set(Math.min(7, Math.max(0, row)));
       this.isHoverSquareVisible.set(true);
     }
   }
@@ -103,7 +114,7 @@ export class ChessboardComponent implements OnDestroy {
       this.dragY.set(piece.row * 12.5);
       window.addEventListener('mousemove', this.onMouseMove);
       window.addEventListener('mouseup', this.onMouseUp);
-      window.addEventListener('touchmove', this.onMouseMove, { passive: false });
+      window.addEventListener('touchmove', this.onMouseMove, { passive: true });
       window.addEventListener('touchend', this.onMouseUp);
     }
   }
@@ -180,7 +191,7 @@ export class ChessboardComponent implements OnDestroy {
     const pieces: Piece[] = [];
     backRowPieces.forEach((type, col) => {
       pieces.push({
-        id: `${color}-${type}-${col}`,
+        id: `${color}-${type}-${col + 1}`,
         type: type as Piece['type'],
         row: backRow,
         image: `/${color}${type === 'knight' ? 'n' : type.charAt(0)}.png`,
@@ -233,6 +244,15 @@ export class ChessboardComponent implements OnDestroy {
 
       if (targetPiece) { allOldPieces = allOldPieces.filter(p => p.id !== targetPiece!.id); }
       return allOldPieces.map(p => p.id === piece.id ? { ...p, row: targetRow, col: targetCol, hasMoved: true } : p);
+    });
+
+    this.pieceMoved.emit({
+      targetPiece: targetPiece ? {
+        id: targetPiece.id, row: targetPiece.row, col: targetPiece.col, color: targetPiece.color,
+        type: targetPiece.type
+      } : null,
+      piece: { id: piece.id, row: piece.row, col: piece.col, color: piece.color, type: piece.type },
+      to: { row: targetRow, col: targetCol }
     });
   }
 

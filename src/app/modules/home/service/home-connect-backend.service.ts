@@ -10,7 +10,7 @@ export class HomeConnectBackendService {
   private readonly commonConnectBackend = inject(CommonConnectBackendService);
 
   constructor() {}
-
+  // TODO: Change join room to use dynamic route instead of request body
   public joinRoom(roomId: JoinRoomApiPayload): Observable<JoinRoomApiResponse> {
     return this.commonConnectBackend.post<JoinRoomApiResponse>('/room/join', roomId);
   }

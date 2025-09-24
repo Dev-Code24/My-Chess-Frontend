@@ -10,7 +10,6 @@ export function getTargetPiece(
   return targetPiece?.color === piece.color ? null : targetPiece;
 }
 
-
 export function validateMove(
   targetRow: number,
   targetCol: number,

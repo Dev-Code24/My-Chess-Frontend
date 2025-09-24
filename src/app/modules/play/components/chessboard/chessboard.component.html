@@ -10,7 +10,7 @@
       (mousemove)="onBoardMouseMove($event)"
       (mouseleave)="onBoardMouseLeave()">
       <svg
-        class="coordinates absolute left-[0] top-[0]"
+        class="coordinates absolute left-[0] top-[0] font-[600]"
         viewBox="0 0 100 100" aria-hidden="true">
         <text x="0.5" y="3" font-size="2.5" class="coordinate">8</text>
         <text x="0.5" y="15.25" font-size="2.5" class="coordinate">7</text>
@@ -39,7 +39,7 @@
             x="-0.25" y="0" width="100" height="100"
             fill="none"
             stroke-width="15"
-            stroke="rgba(255, 255, 255, 0.55)"
+            stroke="rgba(255, 255, 255, 0.75)"
             shape-rendering="crispEdges"
             vector-effect="non-scaling-stroke"
           />
@@ -49,7 +49,7 @@
       <div class="pieces absolute inset-0">
         @for (piece of pieces(); track $index) {
           <div
-            class="piece absolute transition-transform"
+            class="piece absolute transition-transform w-[12.5%] h-[12.5%] select-none {{ piece.id }}"
             [style.background-size]="'100%'"
             [style.background-image]="'url(' + piece.image + ')'"
             [style.cursor]="myColor() === piece.color ? 'grab' : ''"

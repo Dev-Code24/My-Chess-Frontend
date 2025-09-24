@@ -1,6 +1,10 @@
 <!-- TODO: Work on showing the waiting for opponent modal -->
 @if (opponent() && me() && whoIsBlackPlayer()) {
   <div class="h-full">
-    <app-chessboard [opponent]="opponent()!" [me]="me()!" [whoIsBlackPlayer]="whoIsBlackPlayer()!" />
+    <app-chessboard
+      [me]="me()!"
+      [opponent]="opponent()!"
+      [whoIsBlackPlayer]="whoIsBlackPlayer()!"
+      (pieceMoved)="onPieceMoved($event)" />
   </div>
 }
