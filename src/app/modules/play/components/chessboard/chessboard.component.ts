@@ -1,5 +1,5 @@
 import { Component, computed, effect, ElementRef, input, OnDestroy, output, signal, viewChild } from '@angular/core';
-import { Piece, PieceColor, Move, PieceMoved } from './../../@interfaces';
+import { Piece, PieceColor, Move, PieceMoved, PieceDetails } from './../../@interfaces';
 import { AvatarComponent } from "@shared/components/avatar/avatar.component";
 import { UserDetails } from '@shared/@interface';
 import { validateMove, getTargetPiece } from '../../@utils';
@@ -16,10 +16,11 @@ export class ChessboardComponent implements OnDestroy {
   public readonly opponent = input.required<UserDetails>();
   public readonly me = input.required<UserDetails>();
   public readonly whoIsBlackPlayer = input.required<'me' | 'opponent'>();
+  public readonly opponentsMove = input.required<PieceMoved | null>();
   public pieceMoved = output<PieceMoved>();
 
   protected myColor = computed<PieceColor>(() => this.whoIsBlackPlayer() === 'me' ? 'b' : 'w');
-  protected pieces = signal<Piece[]>([]);
+  protected pieces = signal<PieceDetails[]>([]);
   protected draggingPiece = signal<Piece | null>(null);
   protected selectedPiece = signal<Piece | null>(null);
   protected dragX = signal(0);
@@ -37,6 +38,13 @@ export class ChessboardComponent implements OnDestroy {
     this.onMouseUp = this.onMouseUp.bind(this);
     effect(() => {
       this.initBoard();
+    });
+
+    effect(() => {
+      const opponentsMove = this.opponentsMove();
+      if (opponentsMove) {
+        this.updatePiece(opponentsMove.to.row, opponentsMove.to.col, opponentsMove.piece, opponentsMove.move);
+      }
     });
   }
 
@@ -57,7 +65,16 @@ export class ChessboardComponent implements OnDestroy {
 
       if (!draggingPiece && !selectedPiece) {
         const piece = this.pieces().find(p => p.row === targetRow && p.col === targetCol);
-        if (piece && piece.color === this.myColor()) { this.selectedPiece.set(piece); }
+        if (piece && piece.color === this.myColor()) {
+          this.selectedPiece.set({
+            id: piece.id,
+            row: piece.row,
+            col: piece.col,
+            hasMoved: piece.hasMoved,
+            color: piece.color,
+            type: piece.type,
+          });
+        }
         return;
       }
 
@@ -99,7 +116,7 @@ export class ChessboardComponent implements OnDestroy {
     this.isHoverSquareVisible.set(false);
   }
 
-  protected onPieceMouseDown(event: MouseEvent | TouchEvent, piece: Piece) {
+  protected onPieceMouseDown(event: MouseEvent | TouchEvent, piece: PieceDetails) {
     event.preventDefault();
     event.stopPropagation();
     const board = this.chessBoard();
@@ -108,7 +125,14 @@ export class ChessboardComponent implements OnDestroy {
       const grabbedPiece = (event.target as HTMLDivElement);
       grabbedPiece.style.cursor = 'grabbing';
 
-      this.draggingPiece.set(piece);
+      this.draggingPiece.set({
+        id: piece.id,
+        row: piece.row,
+        col: piece.col,
+        color: piece.color,
+        type: piece.type,
+        hasMoved: piece.hasMoved,
+      });
       this.startRowCol.set({ row: piece.row, col: piece.col });
       this.dragX.set(piece.col * 12.5);
       this.dragY.set(piece.row * 12.5);
@@ -188,7 +212,7 @@ export class ChessboardComponent implements OnDestroy {
     pawnRow: number,
     backRowPieces: string[]
   ): void {
-    const pieces: Piece[] = [];
+    const pieces: PieceDetails[] = [];
     backRowPieces.forEach((type, col) => {
       pieces.push({
         id: `${color}-${type}-${col + 1}`,
@@ -197,6 +221,7 @@ export class ChessboardComponent implements OnDestroy {
         image: `/${color}${type === 'knight' ? 'n' : type.charAt(0)}.png`,
         color,
         col,
+        hasMoved: false,
       });
     });
 
@@ -209,6 +234,7 @@ export class ChessboardComponent implements OnDestroy {
         col,
         image: `/${color}p.png`,
         enPassantAvailable: true,
+        hasMoved: false,
       });
     }
     this.pieces.update((array) => [...array, ...pieces]);
@@ -247,12 +273,10 @@ export class ChessboardComponent implements OnDestroy {
     });
 
     this.pieceMoved.emit({
-      targetPiece: targetPiece ? {
-        id: targetPiece.id, row: targetPiece.row, col: targetPiece.col, color: targetPiece.color,
-        type: targetPiece.type
-      } : null,
-      piece: { id: piece.id, row: piece.row, col: piece.col, color: piece.color, type: piece.type },
-      to: { row: targetRow, col: targetCol }
+      targetPiece: targetPiece ?? null,
+      piece,
+      to: { row: targetRow, col: targetCol },
+      move
     });
   }
 

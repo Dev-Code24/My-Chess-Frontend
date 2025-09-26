@@ -1,20 +1,32 @@
-import { Move, Piece, PieceColor } from "../@interfaces";
+import { Move, Piece, PieceColor, PieceDetails } from "../@interfaces";
 
 export function getTargetPiece(
   targetRow: number,
   targetCol: number,
-  allPieces: Piece[],
+  allPieces: PieceDetails[],
   piece: Piece
 ): Piece | null | undefined {
-  const targetPiece = allPieces.find(p => p.col === targetCol && p.row === targetRow);
-  return targetPiece?.color === piece.color ? null : targetPiece;
+  const targetPieceDetails = allPieces.find(p => p.col === targetCol && p.row === targetRow);
+
+  if (targetPieceDetails === undefined) { return targetPieceDetails; }
+
+  const targetPiece: Piece = {
+    id: targetPieceDetails.id,
+    row: targetPieceDetails.row,
+    col: targetPieceDetails.col,
+    color: targetPieceDetails.color,
+    type: targetPieceDetails.type,
+    hasMoved: targetPieceDetails.hasMoved,
+  };
+
+  return targetPiece.color === piece.color ? null : targetPiece;
 }
 
 export function validateMove(
   targetRow: number,
   targetCol: number,
   myColor: PieceColor,
-  allPieces: Piece[],
+  allPieces: PieceDetails[],
   piece: Piece,
 ): Move {
   const targetPiece = getTargetPiece(targetRow, targetCol, allPieces, piece);
@@ -194,7 +206,7 @@ export function isSquareAttacked(
   targetRow: number,
   targetCol: number,
   myColor: PieceColor,
-  allPieces: Piece[],
+  allPieces: PieceDetails[],
 ): boolean {
   for (const piece of allPieces) {
     if (piece.color === myColor) { continue; }
@@ -256,7 +268,7 @@ function isPathClear(
   startCol: number,
   targetRow: number,
   targetCol: number,
-  allPieces: Piece[]
+  allPieces: PieceDetails[]
 ): boolean {
   const rowStep = targetRow === startRow ? 0 : (targetRow > startRow ? 1 : -1);
   const colStep = targetCol === startCol ? 0 : (targetCol > startCol ? 1 : -1);

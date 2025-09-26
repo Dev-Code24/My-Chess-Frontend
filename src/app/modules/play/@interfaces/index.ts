@@ -10,9 +10,12 @@ export interface Piece {
   color: PieceColor
   row: number;
   col: number;
-  image: string;
-  hasMoved?: boolean;
+  hasMoved: boolean;
   enPassantAvailable?: boolean;
+}
+
+export interface PieceDetails extends Piece {
+  image: string;
 }
 
 export interface Move {
@@ -31,9 +34,10 @@ export interface PieceApiPayload {
   position: { row: number, col: number },
 }
 export interface PieceMoved {
-  piece: Pick<Piece, 'id' | 'col' | 'row' | 'color' | 'type'>;
+  piece: Piece,
   to: { row: number, col: number };
-  targetPiece: Pick<Piece, 'id' | 'col' | 'row' | 'color' | 'type'> | null;
+  targetPiece: Piece | null;
+  move: Move;
 }
 
 export interface RoomDetailsApiResponseAttribute extends RoomDetails { }

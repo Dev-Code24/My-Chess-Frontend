@@ -2,8 +2,8 @@ import { Component, effect, inject, input, OnInit, signal } from '@angular/core'
 
 import { RoomDetails, UserDetails } from '@shared/@interface';
 import { SubSink } from '@shared/@utils/Subsink';
-import { PlayConnectBackendService } from 'modules/play/service/play-connect-backend.service';
-import { RoomDetailsApiResponse, PieceMoved } from 'modules/play/@interfaces';
+import { PlayConnectBackendService } from '../../service/play-connect-backend.service';
+import { RoomDetailsApiResponse, PieceMoved } from '../../@interfaces';
 import { StateManagerService } from '@shared/services';
 import { ChessboardComponent } from '../chessboard/chessboard.component';
 
@@ -20,6 +20,7 @@ export class PlayComponent implements OnInit {
   protected opponent = signal<UserDetails | undefined>(undefined);
   protected me = signal<UserDetails | undefined>(undefined);
   protected whoIsBlackPlayer = signal<'me' | 'opponent' | undefined>(undefined);
+  protected opponentsMove = signal<PieceMoved | null>(null);
 
   private readonly subsink = new SubSink();
   private readonly stateManagerService = inject(StateManagerService);
@@ -40,7 +41,7 @@ export class PlayComponent implements OnInit {
   protected onPieceMoved(pieceMoved: PieceMoved): void {
     this.subsink.sink = this.connectBackend.postPieceMoves(this.roomId(), pieceMoved).subscribe({
       next: (data) => {
-        console.log(data);
+        console.log('you played', data);
       },
       error: (err) => console.error(err),
     });
@@ -54,7 +55,17 @@ export class PlayComponent implements OnInit {
         } else if ('code' in response) {
           this.assignPlayerRoles(response.blackPlayer, response.whitePlayer);
         } else {
-          console.log('opponent played', response);
+          if (response.piece.color === 'b') {
+            if (this.whoIsBlackPlayer() === 'opponent') {
+              console.log('opponent moved:', response);
+              this.opponentsMove.set(response);
+            }
+          } else {
+            if (this.whoIsBlackPlayer() === 'me') {
+              console.log('opponent moved:', response);
+              this.opponentsMove.set(response);
+            }
+          }
         }
       },
       error: (error: Event) => console.error(error)
