@@ -54,7 +54,6 @@ export class CommonConnectBackendService {
     return obs.pipe(
       retry(retryCount),
       catchError(err => {
-        // central place to log/report errors if needed
         return throwError(() => err);
       })
     );
@@ -96,5 +95,30 @@ export class CommonConnectBackendService {
     const { retryCount, ...opts } = this.buildOptions(options);
     // NOTE: Do not set Content-Type; browser will set the multipart boundary
     return this.handle(this.http.post<T>(url, formData, opts), retryCount);
+  }
+
+  public getLive<T>(path: string): Observable<T> {
+    const url = this.resolveUrl(path);
+    return new Observable((observer) => {
+      const eventSource = new EventSource(url, { withCredentials: true });
+      eventSource.onmessage = (event) => {
+        let data = event.data as T;
+        try {
+          data = JSON.parse(event.data);
+        } catch (error) { }
+        observer.next(data);
+      }
+
+      eventSource.onerror = (error) => {
+        observer.error(error);
+        eventSource.close();
+        console.warn('Live connection ended, after error', error);
+      }
+
+      return () => {
+        eventSource.close();
+        console.warn('Live connection ended.');
+      };
+    });
   }
 }
