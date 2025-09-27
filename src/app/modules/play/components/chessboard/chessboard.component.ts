@@ -29,9 +29,22 @@ export class ChessboardComponent implements OnDestroy {
   protected hoverSquareCol = signal(0);
   protected isHoverSquareVisible = signal(false);
 
+  private readonly subsink = new SubSink()
   private chessBoard = viewChild<ElementRef<HTMLDivElement>>('chessBoardRef');
   private startRowCol = signal<{ row: number; col: number } | null>(null);
-  private readonly subsink = new SubSink()
+  private lastOpponentMove = signal<PieceMoved | null>(null);
+  private isOpponentsMoveSame = computed(() => {
+    const opponentsMove = this.opponentsMove();
+    const lastOpponentMove = this.lastOpponentMove();
+    if (opponentsMove && lastOpponentMove) {
+      return lastOpponentMove &&
+        lastOpponentMove.to.row === opponentsMove.to.row &&
+        lastOpponentMove.to.col === opponentsMove.to.col &&
+        lastOpponentMove.piece.id === opponentsMove.piece.id;
+    }
+
+    return false;
+  });
 
   constructor() {
     this.onMouseMove = this.onMouseMove.bind(this);
@@ -42,8 +55,10 @@ export class ChessboardComponent implements OnDestroy {
 
     effect(() => {
       const opponentsMove = this.opponentsMove();
-      if (opponentsMove) {
+      if (opponentsMove && !this.isOpponentsMoveSame()) {
         this.updatePiece(opponentsMove.to.row, opponentsMove.to.col, opponentsMove.piece, opponentsMove.move);
+        this.lastOpponentMove.set(opponentsMove);
+        console.log('updated opponent\'s piece,');
       }
     });
   }
@@ -272,12 +287,14 @@ export class ChessboardComponent implements OnDestroy {
       return allOldPieces.map(p => p.id === piece.id ? { ...p, row: targetRow, col: targetCol, hasMoved: true } : p);
     });
 
-    this.pieceMoved.emit({
-      targetPiece: targetPiece ?? null,
-      piece,
-      to: { row: targetRow, col: targetCol },
-      move
-    });
+    if (piece.color === this.myColor()) {
+      this.pieceMoved.emit({
+        targetPiece: targetPiece ?? null,
+        piece,
+        to: { row: targetRow, col: targetCol },
+        move
+      });
+    }
   }
 
   private resetSelectedPiece(): void {
