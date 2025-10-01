@@ -1,1 +1,1 @@
-export { validateMove, getTargetPiece } from "./utils";
+export { validateMove, getTargetPiece, getDefaultCapturedPieces } from './utils';

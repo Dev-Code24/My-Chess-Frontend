@@ -1,5 +1,19 @@
 <div class="board-layout w-full h-full flex flex-col justify-center items-center gap-3">
   <div class="board-layout-player-top pr-2 flex justify-end transition-[width] ease-in-out">
+    <div class="captured-pieces captured-pieces-by-opponent grow h-full flex items-center gap-1 flex-wrap">
+      @for (piece of capturedPiecesByOpponent(); track $index) {
+        @if (piece.count) {
+          <div class="flex items-center">
+            <div
+              class="piece {{ piece.type }} w-8 h-8  sm:w-10 sm:h-10 md:w-12 md:h-12 z-1 transition-transform select-none bg-no-repeat"
+              [style.background-size]="'100%'"
+              [style.background-image]="'url(' + piece.image + ')'">
+            </div>
+            <span class="text-base sm:text-xl sm:-ml-2">× {{ piece.count }}</span>
+          </div>
+        }
+      }
+    </div>
     <mc-avatar [label]="opponent()!.username" [username]="opponent()!.username" />
   </div>
   <div class="board-layout-board flex items-center justify-center">

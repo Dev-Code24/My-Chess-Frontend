@@ -1,4 +1,4 @@
-import { Move, Piece, PieceColor, PieceDetails } from "../@interfaces";
+import { CapturedPieceDetails, Move, Piece, PieceColor, PieceDetails } from "../@interfaces";
 
 export function getTargetPiece(
   targetRow: number,
@@ -292,4 +292,17 @@ function getPawnDirection(color: PieceColor, myColor: PieceColor): number {
   } else {
     return whiteStartsAtBottom ? 1 : -1;
   }
+}
+
+export function getDefaultCapturedPieces(color: PieceColor): CapturedPieceDetails[] {
+  const defaults: CapturedPieceDetails[] = [
+    { type: 'pawn', color, count: 0, image: `/${color}p.png`},
+    { type: 'rook', color, count: 0, image: `/${color}r.png`},
+    { type: 'knight', color, count: 0, image: `/${color}n.png`},
+    { type: 'bishop', color, count: 0, image: `/${color}b.png`},
+    { type: 'queen', color, count: 0, image: `/${color}q.png`},
+    { type: 'king', color, count: 0, image: `/${color}k.png`},
+  ];
+
+  return defaults;
 }

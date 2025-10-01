@@ -1,8 +1,8 @@
 import { Component, computed, effect, ElementRef, input, OnDestroy, output, signal, viewChild } from '@angular/core';
-import { Piece, PieceColor, Move, PieceMoved, PieceDetails } from './../../@interfaces';
+import { Piece, PieceColor, Move, PieceMoved, PieceDetails, CapturedPieceDetails, PieceType } from './../../@interfaces';
 import { AvatarComponent } from "@shared/components/avatar/avatar.component";
 import { UserDetails } from '@shared/@interface';
-import { validateMove, getTargetPiece } from '../../@utils';
+import { validateMove, getTargetPiece, getDefaultCapturedPieces } from '../../@utils';
 import { SubSink } from '@shared/@utils';
 import { timer } from 'rxjs';
 
@@ -21,6 +21,8 @@ export class ChessboardComponent implements OnDestroy {
 
   protected myColor = computed<PieceColor>(() => this.whoIsBlackPlayer() === 'me' ? 'b' : 'w');
   protected pieces = signal<PieceDetails[]>([]);
+  protected capturedPiecesByMe = signal<CapturedPieceDetails[]>([]);
+  protected capturedPiecesByOpponent = signal<CapturedPieceDetails[]>([]);
   protected draggingPiece = signal<Piece | null>(null);
   protected selectedPiece = signal<Piece | null>(null);
   protected dragX = signal(0);
@@ -61,6 +63,12 @@ export class ChessboardComponent implements OnDestroy {
         console.log('updated opponent\'s piece,');
       }
     });
+  }
+
+  public ngOnInit(): void {
+    const opponentsColor = this.myColor() === 'b' ? 'w' : 'b';
+    this.capturedPiecesByMe.set(getDefaultCapturedPieces(opponentsColor));
+    this.capturedPiecesByOpponent.set(getDefaultCapturedPieces(this.myColor()));
   }
 
   public ngOnDestroy(): void {
@@ -286,6 +294,20 @@ export class ChessboardComponent implements OnDestroy {
       if (targetPiece) { allOldPieces = allOldPieces.filter(p => p.id !== targetPiece!.id); }
       return allOldPieces.map(p => p.id === piece.id ? { ...p, row: targetRow, col: targetCol, hasMoved: true } : p);
     });
+
+    if (targetPiece) {
+      if (targetPiece.color !== this.myColor()) {
+        this.capturedPiecesByMe.update((capturedPieces) => {
+          const pieces = [...capturedPieces];
+          return pieces.map((piece) => piece.type === targetPiece.type ? { ...piece, count: piece.count + 1 } : piece);
+        });
+      } else {
+        this.capturedPiecesByOpponent.update((capturedPieces) => {
+          const pieces = [...capturedPieces];
+          return pieces.map((piece) => piece.type === targetPiece.type ? { ...piece, count: piece.count + 1 } : piece);
+        });
+      }
+    }
 
     if (piece.color === this.myColor()) {
       this.pieceMoved.emit({

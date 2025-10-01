@@ -2,7 +2,7 @@ import { BasicApiResponse, RoomDetails } from "@shared/@interface";
 
 export type PieceColor = 'w' | 'b';
 
-type PieceType = 'pawn' | 'rook' | 'knight' | 'bishop' | 'queen' | 'king';
+export type PieceType = 'pawn' | 'rook' | 'knight' | 'bishop' | 'queen' | 'king';
 
 export interface Piece {
   id: string;
@@ -12,6 +12,13 @@ export interface Piece {
   col: number;
   hasMoved: boolean;
   enPassantAvailable?: boolean;
+}
+
+export interface CapturedPieceDetails {
+  type: PieceType;
+  color: PieceColor;
+  count: number;
+  image: string;
 }
 
 export interface PieceDetails extends Piece {
