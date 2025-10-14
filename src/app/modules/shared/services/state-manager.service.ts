@@ -8,8 +8,10 @@ import { BehaviorSubject, Observable } from 'rxjs';
 })
 export class StateManagerService {
   private userSubject = new BehaviorSubject<UserInterface>(DEFAULT_USER_DATA)
+  private myTurnSubject = new BehaviorSubject<boolean>(false);
 
   public user$: Observable<UserInterface> = this.userSubject.asObservable();
+  public myTurn$: Observable<boolean> = this.myTurnSubject.asObservable();
 
   constructor() { }
 
@@ -18,4 +20,6 @@ export class StateManagerService {
   public updateUser(updatedUserField: UserInterface): void { this.userSubject.next(updatedUserField); }
   public resetUser(): void { this.userSubject.next(DEFAULT_USER_DATA); }
 
+  public isMyTurn(): boolean { return this.myTurnSubject.value; }
+  public updateIsMyTurn(myTurn: boolean): void { this.myTurnSubject.next(myTurn); }
 }

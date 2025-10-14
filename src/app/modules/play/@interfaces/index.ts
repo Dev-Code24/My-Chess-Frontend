@@ -47,5 +47,10 @@ export interface PieceMoved {
   move: Move;
 }
 
+export interface LiveMoveDetails {
+  moveDetails: PieceMoved;
+  fen: string;
+}
+
 export interface RoomDetailsApiResponseAttribute extends RoomDetails { }
 export interface RoomDetailsApiResponse extends BasicApiResponse<RoomDetailsApiResponseAttribute> { }

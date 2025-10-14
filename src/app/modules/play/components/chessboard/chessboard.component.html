@@ -5,7 +5,8 @@
         @if (piece.count) {
           <div class="flex items-center">
             <div
-              class="piece {{ piece.type }} w-8 h-8  sm:w-10 sm:h-10 md:w-12 md:h-12 z-1 transition-transform select-none bg-no-repeat"
+              class="piece {{ piece.type }} w-8 h-8 sm:w-10 sm:h-10 z-1 transition-transform
+              select-none bg-no-repeat"
               [style.background-size]="'100%'"
               [style.background-image]="'url(' + piece.image + ')'">
             </div>
@@ -78,6 +79,20 @@
     </div>
   </div>
   <div class="board-layout-player-bottom pr-2 flex justify-end transition-[width] ease-in-out">
+    <div class="captured-pieces captured-pieces-by-me grow h-full flex items-center gap-1 flex-wrap">
+      @for (piece of capturedPiecesByMe(); track $index) {
+        @if (piece.count) {
+          <div class="flex items-center">
+            <div
+              class="piece {{ piece.type }} w-8 h-8 sm:w-10 sm:h-10 z-1 transition-transform select-none bg-no-repeat"
+              [style.background-size]="'100%'"
+              [style.background-image]="'url(' + piece.image + ')'">
+            </div>
+            <span class="text-base sm:text-xl sm:-ml-2">× {{ piece.count }}</span>
+          </div>
+        }
+      }
+    </div>
     <mc-avatar [label]="me()!.username" [username]="me()!.username" />
   </div>
 </div>

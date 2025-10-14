@@ -1,10 +1,11 @@
-import { Component, computed, effect, ElementRef, input, OnDestroy, output, signal, viewChild } from '@angular/core';
+import { Component, computed, effect, ElementRef, inject, input, OnDestroy, output, signal, viewChild } from '@angular/core';
 import { Piece, PieceColor, Move, PieceMoved, PieceDetails, CapturedPieceDetails, PieceType } from './../../@interfaces';
 import { AvatarComponent } from "@shared/components/avatar/avatar.component";
 import { UserDetails } from '@shared/@interface';
-import { validateMove, getTargetPiece, getDefaultCapturedPieces } from '../../@utils';
+import { validateMove, getTargetPiece, getDefaultCapturedPieces, parseFen } from '../../@utils';
 import { SubSink } from '@shared/@utils';
 import { timer } from 'rxjs';
+import { StateManagerService } from '@shared/services';
 
 @Component({
   selector: 'app-chessboard',
@@ -17,6 +18,7 @@ export class ChessboardComponent implements OnDestroy {
   public readonly me = input.required<UserDetails>();
   public readonly whoIsBlackPlayer = input.required<'me' | 'opponent'>();
   public readonly opponentsMove = input.required<PieceMoved | null>();
+  public readonly chessboardFen = input.required<string>();
   public pieceMoved = output<PieceMoved>();
 
   protected myColor = computed<PieceColor>(() => this.whoIsBlackPlayer() === 'me' ? 'b' : 'w');
@@ -30,6 +32,7 @@ export class ChessboardComponent implements OnDestroy {
   protected hoverSquareRow = signal(0);
   protected hoverSquareCol = signal(0);
   protected isHoverSquareVisible = signal(false);
+  protected isMyTurn = signal<boolean | undefined>(undefined);
 
   private readonly subsink = new SubSink()
   private chessBoard = viewChild<ElementRef<HTMLDivElement>>('chessBoardRef');
@@ -47,6 +50,7 @@ export class ChessboardComponent implements OnDestroy {
 
     return false;
   });
+  private stateManagerService = inject(StateManagerService);
 
   constructor() {
     this.onMouseMove = this.onMouseMove.bind(this);
@@ -63,6 +67,11 @@ export class ChessboardComponent implements OnDestroy {
         console.log('updated opponent\'s piece,');
       }
     });
+
+    this.subsink.sink = this.stateManagerService.myTurn$.subscribe((isMyTurn) => {
+      this.isMyTurn.set(isMyTurn);
+    });
+    console.log('turn updated', this.isMyTurn());
   }
 
   public ngOnInit(): void {
@@ -76,10 +85,11 @@ export class ChessboardComponent implements OnDestroy {
   }
 
   protected onBoardClick(event: MouseEvent): void {
+    const isMyTurn = this.isMyTurn();
     const board = this.chessBoard();
     const selectedPiece = this.selectedPiece();
     const draggingPiece = this.draggingPiece();
-    if (board) {
+    if (isMyTurn && board) {
       const rect = board.nativeElement.getBoundingClientRect();
       const x = event.clientX - rect.left;
       const y = event.clientY - rect.top;
@@ -143,8 +153,9 @@ export class ChessboardComponent implements OnDestroy {
     event.preventDefault();
     event.stopPropagation();
     const board = this.chessBoard();
+    const isMyTurn = this.isMyTurn();
 
-    if (piece.color === this.myColor() && board) {
+    if (isMyTurn && piece.color === this.myColor() && board) {
       const grabbedPiece = (event.target as HTMLDivElement);
       grabbedPiece.style.cursor = 'grabbing';
 
@@ -186,8 +197,9 @@ export class ChessboardComponent implements OnDestroy {
   protected onMouseUp(event: MouseEvent | TouchEvent) {
     const piece = this.draggingPiece();
     const board = this.chessBoard();
+    const isMyTurn = this.isMyTurn();
 
-    if (piece && board) {
+    if (isMyTurn && piece && board) {
       const grabbedPiece = (event.target as HTMLDivElement);
       grabbedPiece.style.cursor = 'grab';
 
@@ -216,51 +228,14 @@ export class ChessboardComponent implements OnDestroy {
   }
 
   private initBoard(): void {
-    const whiteBackRow = ['rook', 'knight', 'bishop', 'queen', 'king', 'bishop', 'knight', 'rook'];
-    const blackBackRow = [...whiteBackRow];
     const boardOrientation = this.whoIsBlackPlayer() === 'me' ? 'flip' : 'normal';
+    const pieces = parseFen(this.chessboardFen(), boardOrientation);
 
     if (boardOrientation === 'normal') {
-      this.addPieces('w', 7, 6, whiteBackRow);
-      this.addPieces('b', 0, 1, blackBackRow);
+      this.pieces.set([...pieces.w, ...pieces.b]);
     } else {
-      this.addPieces('b', 7, 6, blackBackRow);
-      this.addPieces('w', 0, 1, whiteBackRow);
+      this.pieces.set([...pieces.b, ...pieces.w]);
     }
-  }
-
-  private addPieces(
-    color: PieceColor,
-    backRow: number,
-    pawnRow: number,
-    backRowPieces: string[]
-  ): void {
-    const pieces: PieceDetails[] = [];
-    backRowPieces.forEach((type, col) => {
-      pieces.push({
-        id: `${color}-${type}-${col + 1}`,
-        type: type as Piece['type'],
-        row: backRow,
-        image: `/${color}${type === 'knight' ? 'n' : type.charAt(0)}.png`,
-        color,
-        col,
-        hasMoved: false,
-      });
-    });
-
-    for (let col = 0; col < 8; col++) {
-      pieces.push({
-        id: `${color}-pawn-${col}`,
-        type: 'pawn',
-        color,
-        row: pawnRow,
-        col,
-        image: `/${color}p.png`,
-        enPassantAvailable: true,
-        hasMoved: false,
-      });
-    }
-    this.pieces.update((array) => [...array, ...pieces]);
   }
 
   private updatePiece(

@@ -3,9 +3,10 @@ import { Component, effect, inject, input, OnInit, signal } from '@angular/core'
 import { RoomDetails, UserDetails } from '@shared/@interface';
 import { SubSink } from '@shared/@utils/Subsink';
 import { PlayConnectBackendService } from '../../service/play-connect-backend.service';
-import { RoomDetailsApiResponse, PieceMoved } from '../../@interfaces';
+import { RoomDetailsApiResponse, PieceMoved, PieceColor, LiveMoveDetails } from '../../@interfaces';
 import { StateManagerService } from '@shared/services';
 import { ChessboardComponent } from '../chessboard/chessboard.component';
+import { isMyTurn } from '../../@utils';
 
 @Component({
   selector: 'app-play',
@@ -21,6 +22,7 @@ export class PlayComponent implements OnInit {
   protected me = signal<UserDetails | undefined>(undefined);
   protected whoIsBlackPlayer = signal<'me' | 'opponent' | undefined>(undefined);
   protected opponentsMove = signal<PieceMoved | null>(null);
+  protected chessboardFen = signal<string | undefined>(undefined);
 
   private readonly subsink = new SubSink();
   private readonly stateManagerService = inject(StateManagerService);
@@ -49,23 +51,26 @@ export class PlayComponent implements OnInit {
 
   private getLiveRoomDetails(): void {
     this.subsink.sink = this.connectBackend.getLiveRoomDetails(this.roomId()).subscribe({
-      next: (response: string | RoomDetails | PieceMoved) => {
+      next: (response: string | RoomDetails | LiveMoveDetails) => {
         if (typeof response === 'string') {
           this.roomNotification.set(response);
         } else if ('code' in response) {
           this.assignPlayerRoles(response.blackPlayer, response.whitePlayer);
         } else {
-          if (response.piece.color === 'b') {
+          const myColor: PieceColor = this.whoIsBlackPlayer() === 'me' ? 'b' : 'w';
+          if (response.moveDetails.piece.color === 'b') {
             if (this.whoIsBlackPlayer() === 'opponent') {
               console.log('opponent moved:', response);
-              this.opponentsMove.set(response);
+              this.opponentsMove.set(response.moveDetails);
             }
           } else {
             if (this.whoIsBlackPlayer() === 'me') {
               console.log('opponent moved:', response);
-              this.opponentsMove.set(response);
+              this.opponentsMove.set(response.moveDetails);
             }
           }
+          this.stateManagerService.updateIsMyTurn(isMyTurn(response.fen, myColor));
+          console.log('set my turn to ', this.stateManagerService.isMyTurn());
         }
       },
       error: (error: Event) => console.error(error)
@@ -78,6 +83,12 @@ export class PlayComponent implements OnInit {
         if (response && response.data) {
           const { data } = response;
           this.assignPlayerRoles(data.blackPlayer, data.whitePlayer);
+          this.chessboardFen.set(data.fen);
+          const whoIsBlackPlayer = this.whoIsBlackPlayer();
+          if (whoIsBlackPlayer) {
+            const myColor: PieceColor = this.whoIsBlackPlayer() === 'me' ? 'b' : 'w';
+            this.stateManagerService.updateIsMyTurn(isMyTurn(data.fen, myColor));
+          }
         }
       }
     });
