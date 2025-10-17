@@ -1,4 +1,4 @@
-import { CapturedPieceDetails, Move, Piece, PieceColor, PieceDetails, PieceType } from "../@interfaces";
+import { CapturedPieceDetails, MoveDetails, Piece, PieceColor, PieceDetails, PieceType } from "../@interfaces";
 import { fenToPieceType } from "./constants";
 
 export function getTargetPiece(
@@ -29,13 +29,13 @@ export function validateMove(
   myColor: PieceColor,
   allPieces: PieceDetails[],
   piece: Piece,
-): Move {
+): MoveDetails {
   const targetPiece = getTargetPiece(targetRow, targetCol, allPieces, piece);
   if (targetPiece === null) return { valid: false };
 
   const rowDiff = targetRow - piece.row;
   const colDiff = targetCol - piece.col;
-  const response: Move = { valid: false };
+  const response: MoveDetails = { valid: false };
 
   switch (piece.type) {
     case 'pawn': {

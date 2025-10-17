@@ -3,7 +3,7 @@ import { Component, effect, inject, input, OnInit, signal } from '@angular/core'
 import { RoomDetails, UserDetails } from '@shared/@interface';
 import { SubSink } from '@shared/@utils/Subsink';
 import { PlayConnectBackendService } from '../../service/play-connect-backend.service';
-import { RoomDetailsApiResponse, PieceMoved, PieceColor, LiveMoveDetails } from '../../@interfaces';
+import { RoomDetailsApiResponse, Move, PieceColor, LiveRoomInfo } from '../../@interfaces';
 import { StateManagerService } from '@shared/services';
 import { ChessboardComponent } from '../chessboard/chessboard.component';
 import { isMyTurn } from '../../@utils';
@@ -21,7 +21,7 @@ export class PlayComponent implements OnInit {
   protected opponent = signal<UserDetails | undefined>(undefined);
   protected me = signal<UserDetails | undefined>(undefined);
   protected whoIsBlackPlayer = signal<'me' | 'opponent' | undefined>(undefined);
-  protected opponentsMove = signal<PieceMoved | null>(null);
+  protected opponentsMove = signal<Move | null>(null);
   protected chessboardFen = signal<string | undefined>(undefined);
 
   private readonly subsink = new SubSink();
@@ -40,8 +40,8 @@ export class PlayComponent implements OnInit {
     this.subsink.unsubscribeAll();
   }
 
-  protected onPieceMoved(pieceMoved: PieceMoved): void {
-    this.subsink.sink = this.connectBackend.postPieceMoves(this.roomId(), pieceMoved).subscribe({
+  protected onPieceMoved(move: Move): void {
+    this.subsink.sink = this.connectBackend.postPieceMoves(this.roomId(), move).subscribe({
       next: (data) => {
         console.log('you played', data);
       },
@@ -51,7 +51,7 @@ export class PlayComponent implements OnInit {
 
   private getLiveRoomDetails(): void {
     this.subsink.sink = this.connectBackend.getLiveRoomDetails(this.roomId()).subscribe({
-      next: (response: string | RoomDetails | LiveMoveDetails) => {
+      next: (response: string | RoomDetails | LiveRoomInfo) => {
         if (typeof response === 'string') {
           this.roomNotification.set(response);
         } else if ('code' in response) {

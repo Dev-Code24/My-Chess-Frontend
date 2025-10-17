@@ -25,7 +25,7 @@ export interface PieceDetails extends Piece {
   image: string;
 }
 
-export interface Move {
+export interface MoveDetails {
   valid: boolean;
   capture?: Piece | null;
   promotion?: boolean;
@@ -34,21 +34,15 @@ export interface Move {
   enPassant?: boolean;
 }
 
-export interface PieceApiPayload {
-  id: string;
-  type: PieceType;
-  color: PieceColor;
-  position: { row: number, col: number },
-}
-export interface PieceMoved {
+export interface Move {
   piece: Piece,
   to: { row: number, col: number };
   targetPiece: Piece | null;
-  move: Move;
+  moveDetails: MoveDetails;
 }
 
-export interface LiveMoveDetails {
-  moveDetails: PieceMoved;
+export interface LiveRoomInfo {
+  moveDetails: Move;
   fen: string;
 }
 

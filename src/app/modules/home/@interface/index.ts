@@ -10,7 +10,9 @@ export interface JoinRoomApiPayload {
 }
 
 interface JoinRoomApiResponseAttribute extends RoomDetails { }
-interface CreateRoomApiResponseAttribute extends RoomDetails { }
+interface CreateRoomApiResponseAttribute {
+  code: string
+}
 
 export interface JoinRoomApiResponse extends BasicApiResponse<JoinRoomApiResponseAttribute> { }
 export interface CreateRoomApiResponse extends BasicApiResponse<CreateRoomApiResponseAttribute> { }

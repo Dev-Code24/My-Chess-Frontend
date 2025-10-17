@@ -2,7 +2,7 @@ import { inject, Injectable } from '@angular/core';
 import { RoomDetails } from '@shared/@interface';
 import { CommonConnectBackendService } from '@shared/services';
 import { Observable } from 'rxjs';
-import { LiveMoveDetails, PieceMoved, RoomDetailsApiResponse } from '../@interfaces';
+import { LiveRoomInfo, Move, RoomDetailsApiResponse } from '../@interfaces';
 
 @Injectable({
   providedIn: 'root'
@@ -16,11 +16,11 @@ export class PlayConnectBackendService {
     return this.commonConnectBackend.get<RoomDetailsApiResponse>(`/room/${code}`);
   }
 
-  public getLiveRoomDetails(code: string): Observable<RoomDetails | LiveMoveDetails | string> {
-    return this.commonConnectBackend.getLive<RoomDetails | LiveMoveDetails | string>(`/room/live/${code}`);
+  public getLiveRoomDetails(code: string): Observable<RoomDetails | LiveRoomInfo | string> {
+    return this.commonConnectBackend.getLive<RoomDetails | LiveRoomInfo | string>(`/room/live/${code}`);
   }
 
-  public postPieceMoves(code: string, pieceMoved: PieceMoved): Observable<any> {
+  public postPieceMoves(code: string, pieceMoved: Move): Observable<any> {
     return this.commonConnectBackend.post<any>(`/room/move/${code}`, pieceMoved);
   }
 }

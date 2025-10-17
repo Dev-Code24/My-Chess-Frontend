@@ -1,5 +1,5 @@
 import { Component, computed, effect, ElementRef, inject, input, OnDestroy, output, signal, viewChild } from '@angular/core';
-import { Piece, PieceColor, Move, PieceMoved, PieceDetails, CapturedPieceDetails, PieceType } from './../../@interfaces';
+import { Piece, PieceColor, MoveDetails, Move, PieceDetails, CapturedPieceDetails } from './../../@interfaces';
 import { AvatarComponent } from "@shared/components/avatar/avatar.component";
 import { UserDetails } from '@shared/@interface';
 import { validateMove, getTargetPiece, getDefaultCapturedPieces, parseFen } from '../../@utils';
@@ -17,9 +17,9 @@ export class ChessboardComponent implements OnDestroy {
   public readonly opponent = input.required<UserDetails>();
   public readonly me = input.required<UserDetails>();
   public readonly whoIsBlackPlayer = input.required<'me' | 'opponent'>();
-  public readonly opponentsMove = input.required<PieceMoved | null>();
+  public readonly opponentsMove = input.required<Move | null>();
   public readonly chessboardFen = input.required<string>();
-  public pieceMoved = output<PieceMoved>();
+  public move = output<Move>();
 
   protected myColor = computed<PieceColor>(() => this.whoIsBlackPlayer() === 'me' ? 'b' : 'w');
   protected pieces = signal<PieceDetails[]>([]);
@@ -35,9 +35,9 @@ export class ChessboardComponent implements OnDestroy {
   protected isMyTurn = signal<boolean | undefined>(undefined);
 
   private readonly subsink = new SubSink()
-  private chessBoard = viewChild<ElementRef<HTMLDivElement>>('chessBoardRef');
+  private readonly chessBoard = viewChild<ElementRef<HTMLDivElement>>('chessBoardRef');
   private startRowCol = signal<{ row: number; col: number } | null>(null);
-  private lastOpponentMove = signal<PieceMoved | null>(null);
+  private lastOpponentMove = signal<Move | null>(null);
   private isOpponentsMoveSame = computed(() => {
     const opponentsMove = this.opponentsMove();
     const lastOpponentMove = this.lastOpponentMove();
@@ -62,16 +62,14 @@ export class ChessboardComponent implements OnDestroy {
     effect(() => {
       const opponentsMove = this.opponentsMove();
       if (opponentsMove && !this.isOpponentsMoveSame()) {
-        this.updatePiece(opponentsMove.to.row, opponentsMove.to.col, opponentsMove.piece, opponentsMove.move);
+        this.updatePiece(opponentsMove.to.row, opponentsMove.to.col, opponentsMove.piece, opponentsMove.moveDetails);
         this.lastOpponentMove.set(opponentsMove);
-        console.log('updated opponent\'s piece,');
       }
     });
 
     this.subsink.sink = this.stateManagerService.myTurn$.subscribe((isMyTurn) => {
       this.isMyTurn.set(isMyTurn);
     });
-    console.log('turn updated', this.isMyTurn());
   }
 
   public ngOnInit(): void {
@@ -152,6 +150,7 @@ export class ChessboardComponent implements OnDestroy {
   protected onPieceMouseDown(event: MouseEvent | TouchEvent, piece: PieceDetails) {
     event.preventDefault();
     event.stopPropagation();
+
     const board = this.chessBoard();
     const isMyTurn = this.isMyTurn();
 
@@ -242,14 +241,14 @@ export class ChessboardComponent implements OnDestroy {
     targetRow: number,
     targetCol: number,
     piece: Piece,
-    move: Move
+    moveDetails: MoveDetails
   ): void {
     const targetPiece = getTargetPiece(targetRow, targetCol, this.pieces(), piece);
     this.pieces.update(allPieces => {
       let allOldPieces = [...allPieces];
-      if (move.castling) {
-        const rookCol = move.castling === 'kingside' ? 7 : 0;
-        const newRookCol = move.castling === 'kingside' ? 5 : 3;
+      if (moveDetails.castling) {
+        const rookCol = moveDetails.castling === 'kingside' ? 7 : 0;
+        const newRookCol = moveDetails.castling === 'kingside' ? 5 : 3;
 
         allOldPieces = allOldPieces.map(p => {
           if (p.type === 'rook' && p.row === piece.row && p.col === rookCol) {
@@ -258,8 +257,8 @@ export class ChessboardComponent implements OnDestroy {
           return p;
         });
       }
-      if (move.enPassant) {
-        const capturedPawn = move.capture;
+      if (moveDetails.enPassant) {
+        const capturedPawn = moveDetails.capture;
         if (capturedPawn) { allOldPieces = allOldPieces.filter(p => p.id !== capturedPawn.id); }
         allOldPieces = allOldPieces.map(p =>
           p.id === piece.id ? { ...p, row: targetRow, col: targetCol, hasMoved: true } : p
@@ -285,11 +284,18 @@ export class ChessboardComponent implements OnDestroy {
     }
 
     if (piece.color === this.myColor()) {
-      this.pieceMoved.emit({
+      this.move.emit({
         targetPiece: targetPiece ?? null,
         piece,
         to: { row: targetRow, col: targetCol },
-        move
+        moveDetails
+      });
+
+      console.log({
+        targetPiece: targetPiece ?? null,
+        piece,
+        to: { row: targetRow, col: targetCol },
+        moveDetails
       });
     }
   }
