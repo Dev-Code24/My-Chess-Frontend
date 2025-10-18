@@ -2,7 +2,7 @@ import { Component, computed, effect, ElementRef, inject, input, OnDestroy, outp
 import { Piece, PieceColor, MoveDetails, Move, PieceDetails, CapturedPieceDetails } from './../../@interfaces';
 import { AvatarComponent } from "@shared/components/avatar/avatar.component";
 import { UserDetails } from '@shared/@interface';
-import { validateMove, getTargetPiece, getDefaultCapturedPieces, parseFen } from '../../@utils';
+import { validateMove, getTargetPiece, getCapturedPiecesOfAColor, parseFen } from '../../@utils';
 import { SubSink } from '@shared/@utils';
 import { timer } from 'rxjs';
 import { StateManagerService } from '@shared/services';
@@ -19,6 +19,7 @@ export class ChessboardComponent implements OnDestroy {
   public readonly whoIsBlackPlayer = input.required<'me' | 'opponent'>();
   public readonly opponentsMove = input.required<Move | null>();
   public readonly chessboardFen = input.required<string>();
+  public readonly capturedPieces = input.required<string>()
   public move = output<Move>();
 
   protected myColor = computed<PieceColor>(() => this.whoIsBlackPlayer() === 'me' ? 'b' : 'w');
@@ -74,8 +75,10 @@ export class ChessboardComponent implements OnDestroy {
 
   public ngOnInit(): void {
     const opponentsColor = this.myColor() === 'b' ? 'w' : 'b';
-    this.capturedPiecesByMe.set(getDefaultCapturedPieces(opponentsColor));
-    this.capturedPiecesByOpponent.set(getDefaultCapturedPieces(this.myColor()));
+    this.capturedPiecesByMe.set(getCapturedPiecesOfAColor(opponentsColor, this.capturedPieces()));
+    this.capturedPiecesByOpponent.set(getCapturedPiecesOfAColor(this.myColor(), this.capturedPieces()));
+    console.log("by me", this.capturedPiecesByMe());
+    console.log("by opponent", this.capturedPiecesByOpponent());
   }
 
   public ngOnDestroy(): void {

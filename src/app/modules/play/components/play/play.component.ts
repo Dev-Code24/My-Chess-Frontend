@@ -23,6 +23,7 @@ export class PlayComponent implements OnInit {
   protected whoIsBlackPlayer = signal<'me' | 'opponent' | undefined>(undefined);
   protected opponentsMove = signal<Move | null>(null);
   protected chessboardFen = signal<string | undefined>(undefined);
+  protected capturedPieces = signal<string | undefined>(undefined);
 
   private readonly subsink = new SubSink();
   private readonly stateManagerService = inject(StateManagerService);
@@ -84,6 +85,7 @@ export class PlayComponent implements OnInit {
           const { data } = response;
           this.assignPlayerRoles(data.blackPlayer, data.whitePlayer);
           this.chessboardFen.set(data.fen);
+          this.capturedPieces.set(data.capturedPieces);
           const whoIsBlackPlayer = this.whoIsBlackPlayer();
           if (whoIsBlackPlayer) {
             const myColor: PieceColor = this.whoIsBlackPlayer() === 'me' ? 'b' : 'w';

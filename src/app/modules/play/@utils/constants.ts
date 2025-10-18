@@ -7,4 +7,10 @@ export const fenToPieceType: Record<string, PieceType> = {
   b: "bishop",
   q: "queen",
   k: "king",
+  P: "pawn",
+  R: "rook",
+  N: "knight",
+  B: "bishop",
+  Q: "queen",
+  K: "king",
 };

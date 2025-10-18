@@ -285,7 +285,6 @@ function isPathClear(
   return true;
 }
 
-
 function getPawnDirection(color: PieceColor, myColor: PieceColor): number {
   const whiteStartsAtBottom = myColor === 'w';
   if (color === 'w') {
@@ -295,54 +294,49 @@ function getPawnDirection(color: PieceColor, myColor: PieceColor): number {
   }
 }
 
-export function getDefaultCapturedPieces(color: PieceColor): CapturedPieceDetails[] {
-  const defaults: CapturedPieceDetails[] = [
-    { type: 'pawn', color, count: 0, image: `/${color}p.png`},
-    { type: 'rook', color, count: 0, image: `/${color}r.png`},
-    { type: 'knight', color, count: 0, image: `/${color}n.png`},
-    { type: 'bishop', color, count: 0, image: `/${color}b.png`},
-    { type: 'queen', color, count: 0, image: `/${color}q.png`},
-    { type: 'king', color, count: 0, image: `/${color}k.png`},
+export function getCapturedPiecesOfAColor(
+  color: PieceColor,
+  capturedPieces: string
+): CapturedPieceDetails[] {
+  const capturedPiecesList: CapturedPieceDetails[] = [
+    { type: 'pawn', color, count: 0, image: `/${color}p.png` },
+    { type: 'rook', color, count: 0, image: `/${color}r.png` },
+    { type: 'knight', color, count: 0, image: `/${color}n.png` },
+    { type: 'bishop', color, count: 0, image: `/${color}b.png` },
+    { type: 'queen', color, count: 0, image: `/${color}q.png` },
+    { type: 'king', color, count: 0, image: `/${color}k.png` },
   ];
-  return defaults;
-}
 
-export function parseFen(fen: string, boardOrientation: 'normal' | 'flip'): { w: PieceDetails[], b: PieceDetails[] } {
-  const parts = fen.split(' ');
-  const placement = parts[0];
-  const rows = placement.split('/');
-  const bpieces: PieceDetails[] = [];
-  const wpieces: PieceDetails[] = [];
+  if (!capturedPieces) return capturedPiecesList;
 
-  rows.forEach((row, rowIndex) => {
-    let col = 0;
-    for (const char of row) {
-      const regex = /[1-8]/;
-      if (regex.test(char)) {
-        col += parseInt(char, 10);
-      } else {
-        const color: PieceColor = char === char.toUpperCase() ? 'w' : 'b';
-        const type: PieceType = fenToPieceType[char.toLowerCase()];
-        const piece = {
-          id: `${color}-${type}-${col}`,
-          type,
-          color,
-          row: boardOrientation === 'normal' ? rowIndex : 7 - rowIndex,
-          col,
-          hasMoved: false,
-          image: `/${color}${type === 'knight' ? 'n' : type.charAt(0)}.png`,
-        };
-        if (color === 'b') { bpieces.push(piece); }
-        else { wpieces.push(piece); }
+  const [blackSection, whiteSection] = capturedPieces.split('/');
+  const section = color === 'b' ? blackSection : whiteSection;
 
-        col++;
+  let currentPiece = '';
+  let number = '';
+
+  for (const c of section) {
+    if (/[a-zA-Z]/.test(c)) {
+      if (currentPiece && number) {
+        const defaultPiece = capturedPiecesList.find(
+          (p) => p.type === fenToPieceType[currentPiece.toLowerCase()]
+        );
+        if (defaultPiece) defaultPiece.count = parseInt(number);
+        number = '';
       }
+      currentPiece = c;
+    } else if (/\d/.test(c)) {
+      number += c;
     }
-  });
-  return { w: wpieces, b: bpieces };
+  }
+
+  if (currentPiece && number) {
+    const defaultPiece = capturedPiecesList.find(
+      (p) => p.type === fenToPieceType[currentPiece.toLowerCase()]
+    );
+    if (defaultPiece) defaultPiece.count = parseInt(number);
+  }
+
+  return capturedPiecesList;
 }
 
-export function isMyTurn(fen: string, myColor: PieceColor): boolean {
-  const parts = fen.split(" ");
-  return parts[1] === myColor;
-}
