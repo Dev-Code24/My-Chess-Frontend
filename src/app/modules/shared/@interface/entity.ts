@@ -9,6 +9,8 @@ export type UserInterface = { isLoggedIn: false; details: null; } | { isLoggedIn
 export interface RoomDetails {
   id: string;
   code: string;
+  fen: string;
+  capturedPieces: string;
   whitePlayer: UserDetails | null;
   blackPlayer: UserDetails | null;
   lastActivity: Date;
