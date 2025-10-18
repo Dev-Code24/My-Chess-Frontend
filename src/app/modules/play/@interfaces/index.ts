@@ -30,7 +30,7 @@ export interface MoveDetails {
   capture?: Piece | null;
   promotion?: boolean;
   castling?: 'kingside' | 'queenside';
-  reason?: 'squareUnderAttack' | 'kingInCheckDuringCastling';
+  situation?: 'squareUnderAttack' | 'kingInCheckDuringCastling' | 'doubleStep';
   enPassant?: boolean;
 }
 

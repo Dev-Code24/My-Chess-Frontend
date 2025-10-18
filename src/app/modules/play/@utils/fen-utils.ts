@@ -4,6 +4,7 @@ import { fenToPieceType } from "./constants";
 export function parseFen(fen: string, boardOrientation: 'normal' | 'flip'): { w: PieceDetails[], b: PieceDetails[] } {
   const parts = fen.split(' ');
   const placement = parts[0];
+  const enPassantField = parts[3];
   const rows = placement.split('/');
   const bpieces: PieceDetails[] = [];
   const wpieces: PieceDetails[] = [];
@@ -17,7 +18,7 @@ export function parseFen(fen: string, boardOrientation: 'normal' | 'flip'): { w:
       } else {
         const color: PieceColor = char === char.toUpperCase() ? 'w' : 'b';
         const type: PieceType = fenToPieceType[char.toLowerCase()];
-        const piece = {
+        const piece: PieceDetails = {
           id: `${color}-${type}-${col}`,
           type,
           color,
@@ -26,6 +27,7 @@ export function parseFen(fen: string, boardOrientation: 'normal' | 'flip'): { w:
           hasMoved: false,
           image: `/${color}${type === 'knight' ? 'n' : type.charAt(0)}.png`,
         };
+
         if (color === 'b') { bpieces.push(piece); }
         else { wpieces.push(piece); }
 
@@ -33,6 +35,22 @@ export function parseFen(fen: string, boardOrientation: 'normal' | 'flip'): { w:
       }
     }
   });
+
+  if (enPassantField && enPassantField !== "-") {
+    const col = enPassantField.charCodeAt(0) - "a".charCodeAt(0);
+    const rank = parseInt(enPassantField[1], 10);
+    const targetRow = 8 - rank;
+
+    const adjustedRow =
+      boardOrientation === "flip" ? 7 - targetRow : targetRow;
+
+    let pawn =
+      wpieces.find((p) => p.type === "pawn" && p.col === col && p.row === adjustedRow) ||
+      bpieces.find((p) => p.type === "pawn" && p.col === col && p.row === adjustedRow);
+
+    if (pawn) pawn.enPassantAvailable = true;
+  }
+
   return { w: wpieces, b: bpieces };
 }
 

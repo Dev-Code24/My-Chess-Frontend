@@ -244,7 +244,7 @@ export class ChessboardComponent implements OnDestroy {
     piece: Piece,
     moveDetails: MoveDetails
   ): void {
-    const targetPiece = getTargetPiece(targetRow, targetCol, this.pieces(), piece);
+    const targetPiece = moveDetails.capture;
     this.pieces.update(allPieces => {
       let allOldPieces = [...allPieces];
       if (moveDetails.castling) {
@@ -265,8 +265,21 @@ export class ChessboardComponent implements OnDestroy {
         );
       }
 
-      if (targetPiece) { allOldPieces = allOldPieces.filter(p => p.id !== targetPiece!.id); }
-      return allOldPieces.map(p => p.id === piece.id ? { ...p, row: targetRow, col: targetCol, hasMoved: true } : p);
+      if (targetPiece) { allOldPieces = allOldPieces.filter(p => p.id !== targetPiece.id); }
+
+      return allOldPieces.map(p => {
+        if (p.id === piece.id) {
+          const a = { ...p, row: targetRow, col: targetCol, hasMoved: true }
+          if (p.type === 'pawn') {
+            if (moveDetails.situation === 'doubleStep') { a.enPassantAvailable = true; }
+            else {
+              a.enPassantAvailable = false;
+              delete a.enPassantAvailable;
+            }
+          }
+          return a;
+        } else { return p; }
+      });
     });
 
     if (targetPiece) {
@@ -284,6 +297,9 @@ export class ChessboardComponent implements OnDestroy {
     }
 
     if (piece.color === this.myColor()) {
+      if (piece.type === 'pawn' && moveDetails.situation === 'doubleStep') {
+        piece.enPassantAvailable = true;
+      }
       this.move.emit({
         targetPiece: targetPiece ?? null,
         piece,

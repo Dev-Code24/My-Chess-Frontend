@@ -45,7 +45,7 @@ export function validateMove(
       // single forward
       if (!targetPiece && rowDiff === direction && colDiff === 0) {
         if (isSquareAttacked(targetRow, targetCol, myColor, allPieces)) {
-          response.reason = 'squareUnderAttack';
+          response.situation = 'squareUnderAttack';
         }
         response.valid = true;
         response.promotion = targetRow === (piece.color === 'w' ? 0 : 7);
@@ -57,9 +57,10 @@ export function validateMove(
         const midRow = piece.row + direction;
         if (!allPieces.some(p => p.row === midRow && p.col === piece.col)) {
           if (isSquareAttacked(targetRow, targetCol, myColor, allPieces)) {
-            response.reason = 'squareUnderAttack';
+            response.situation = 'squareUnderAttack';
           }
           response.valid = true;
+          response.situation = 'doubleStep';
           return response;
         }
       }
@@ -67,10 +68,11 @@ export function validateMove(
       // capture
       if (targetPiece && rowDiff === direction && Math.abs(colDiff) === 1) {
         if (isSquareAttacked(targetRow, targetCol, myColor, allPieces)) {
-          response.reason = 'squareUnderAttack';
+          response.situation = 'squareUnderAttack';
         }
         response.valid = true;
         response.capture = targetPiece;
+        console.log(targetPiece);
         return response;
       }
 
@@ -78,7 +80,7 @@ export function validateMove(
       const enPassantRow = myColor === 'b' ? piece.color === 'w' ? 4 : 3 : piece.color === 'w' ? 3 : 4;
       const enPassantTargetCol = piece.col + colDiff;
       if (rowDiff === direction && Math.abs(colDiff) === 1 && targetRow - enPassantRow === direction) {
-        const enPassantPawn = allPieces.find(p =>
+        const enPassantPawnDetails = allPieces.find(p =>
           p.row === enPassantRow &&
           p.col === enPassantTargetCol &&
           p.type === 'pawn' &&
@@ -86,9 +88,18 @@ export function validateMove(
           p.enPassantAvailable
         );
 
-        if (enPassantPawn) {
+        if (enPassantPawnDetails) {
           response.valid = true;
-          response.capture = enPassantPawn;
+          const enPassantPawnPiece: Piece = {
+            id: enPassantPawnDetails.id,
+            row: enPassantPawnDetails.row,
+            col: enPassantPawnDetails.col,
+            color: enPassantPawnDetails.color,
+            type: enPassantPawnDetails.type,
+            hasMoved: enPassantPawnDetails.hasMoved,
+            enPassantAvailable: enPassantPawnDetails.enPassantAvailable
+           };
+          response.capture = enPassantPawnPiece;
           response.enPassant = true;
           return response;
         }
@@ -101,7 +112,7 @@ export function validateMove(
       if (rowDiff === 0 || colDiff === 0) {
         if (isPathClear(piece.row, piece.col, targetRow, targetCol, allPieces)) {
           if (isSquareAttacked(targetRow, targetCol, myColor, allPieces)) {
-            response.reason = 'squareUnderAttack';
+            response.situation = 'squareUnderAttack';
           }
           response.valid = true;
           response.capture = targetPiece ?? undefined;
@@ -116,7 +127,7 @@ export function validateMove(
         (Math.abs(rowDiff) === 1 && Math.abs(colDiff) === 2)
       ) {
         if (isSquareAttacked(targetRow, targetCol, myColor, allPieces)) {
-          response.reason = 'squareUnderAttack';
+          response.situation = 'squareUnderAttack';
         }
         response.valid = true;
         response.capture = targetPiece ?? undefined;
@@ -128,7 +139,7 @@ export function validateMove(
       if (Math.abs(rowDiff) === Math.abs(colDiff)) {
         if (isPathClear(piece.row, piece.col, targetRow, targetCol, allPieces)) {
           if (isSquareAttacked(targetRow, targetCol, myColor, allPieces)) {
-            response.reason = 'squareUnderAttack';
+            response.situation = 'squareUnderAttack';
           }
           response.valid = true;
           response.capture = targetPiece ?? undefined;
@@ -141,7 +152,7 @@ export function validateMove(
       if (rowDiff === 0 || colDiff === 0 || Math.abs(rowDiff) === Math.abs(colDiff)) {
         if (isPathClear(piece.row, piece.col, targetRow, targetCol, allPieces)) {
           if (isSquareAttacked(targetRow, targetCol, myColor, allPieces)) {
-            response.reason = 'squareUnderAttack';
+            response.situation = 'squareUnderAttack';
           }
           response.valid = true;
           response.capture = targetPiece ?? undefined;
@@ -154,9 +165,10 @@ export function validateMove(
       // Normal king move
       if (Math.abs(rowDiff) <= 1 && Math.abs(colDiff) <= 1) {
         if (isSquareAttacked(targetRow, targetCol, myColor, allPieces)) {
-          return { ...response, valid: false, reason: 'squareUnderAttack' };
+          return { ...response, valid: false, situation: 'squareUnderAttack' };
         }
         response.valid = true;
+        response.capture = targetPiece ?? undefined;
         return response;
       }
 
@@ -188,7 +200,7 @@ export function validateMove(
           isSquareAttacked(piece.row, piece.col + colStep, myColor, allPieces) ||
           isSquareAttacked(piece.row, rookCol, myColor, allPieces)
         ) {
-          return { ...response, valid: false, reason: 'kingInCheckDuringCastling' };
+          return { ...response, valid: false, situation: 'kingInCheckDuringCastling' };
         }
         response.valid = true;
         response.castling = colDiff > 0 ? 'kingside' : 'queenside';
@@ -262,7 +274,6 @@ export function isSquareAttacked(
 
   return false;
 }
-
 
 function isPathClear(
   startRow: number,
@@ -339,4 +350,3 @@ export function getCapturedPiecesOfAColor(
 
   return capturedPiecesList;
 }
-
