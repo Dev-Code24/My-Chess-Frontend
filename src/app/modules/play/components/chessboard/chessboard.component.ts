@@ -62,7 +62,7 @@ export class ChessboardComponent implements OnDestroy {
     effect(() => {
       const opponentsMove = this.opponentsMove();
       if (opponentsMove && !this.isOpponentsMoveSame()) {
-        this.updatePiece(opponentsMove.to.row, opponentsMove.to.col, opponentsMove.piece, opponentsMove.moveDetails);
+        this.updatePiece(7 - opponentsMove.to.row, opponentsMove.to.col, opponentsMove.piece, opponentsMove.moveDetails);
         this.lastOpponentMove.set(opponentsMove);
       }
     });
@@ -251,13 +251,12 @@ export class ChessboardComponent implements OnDestroy {
         const newRookCol = moveDetails.castling === 'kingside' ? 5 : 3;
 
         allOldPieces = allOldPieces.map(p => {
-          if (p.type === 'rook' && p.row === piece.row && p.col === rookCol) {
+          if ('rook' === p.type && p.color === piece.color && p.row === targetRow && p.col === rookCol) {
             return { ...p, col: newRookCol, hasMoved: true };
           }
           return p;
         });
-      }
-      if (moveDetails.enPassant) {
+      } else if (moveDetails.enPassant) {
         const capturedPawn = moveDetails.capture;
         if (capturedPawn) { allOldPieces = allOldPieces.filter(p => p.id !== capturedPawn.id); }
         allOldPieces = allOldPieces.map(p =>
