@@ -77,8 +77,6 @@ export class ChessboardComponent implements OnDestroy {
     const opponentsColor = this.myColor() === 'b' ? 'w' : 'b';
     this.capturedPiecesByMe.set(getCapturedPiecesOfAColor(opponentsColor, this.capturedPieces()));
     this.capturedPiecesByOpponent.set(getCapturedPiecesOfAColor(this.myColor(), this.capturedPieces()));
-    console.log("by me", this.capturedPiecesByMe());
-    console.log("by opponent", this.capturedPiecesByOpponent());
   }
 
   public ngOnDestroy(): void {
