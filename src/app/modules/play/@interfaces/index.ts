@@ -27,7 +27,8 @@ export interface PieceDetails extends Piece {
 
 export interface MoveDetails {
   valid: boolean;
-  capture?: Piece | null;
+  targetPiece?: Piece | null;
+  promotedPiece?: Piece | null;
   promotion?: boolean;
   castling?: 'kingside' | 'queenside';
   situation?: 'squareUnderAttack' | 'kingInCheckDuringCastling' | 'doubleStep';
@@ -36,13 +37,12 @@ export interface MoveDetails {
 
 export interface Move {
   piece: Piece,
-  to: { row: number, col: number };
-  targetPiece: Piece | null;
   moveDetails: MoveDetails;
+  to: { row: number, col: number };
 }
 
 export interface LiveRoomInfo {
-  moveDetails: Move;
+  move: Move;
   fen: string;
 }
 

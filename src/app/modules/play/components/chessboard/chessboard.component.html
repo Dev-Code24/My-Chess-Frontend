@@ -96,3 +96,10 @@
     <mc-avatar [label]="me()!.username" [username]="me()!.username" />
   </div>
 </div>
+
+@if (pawnToBePromoted() && myColor() === pawnToBePromoted()!.color) {
+  <app-promotion-dialog
+  [pawn]="pawnToBePromoted()!"
+  [(visible)]="isPromotionDialogVisible"
+  (onPromote)="handlePromotionPieceSelection($event)" />
+}

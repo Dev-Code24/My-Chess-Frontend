@@ -59,15 +59,15 @@ export class PlayComponent implements OnInit {
           this.assignPlayerRoles(response.blackPlayer, response.whitePlayer);
         } else {
           const myColor: PieceColor = this.whoIsBlackPlayer() === 'me' ? 'b' : 'w';
-          if (response.moveDetails.piece.color === 'b') {
+          if (response.move.piece.color === 'b') {
             if (this.whoIsBlackPlayer() === 'opponent') {
               console.log('opponent moved:', response);
-              this.opponentsMove.set(response.moveDetails);
+              this.opponentsMove.set(response.move);
             }
           } else {
             if (this.whoIsBlackPlayer() === 'me') {
               console.log('opponent moved:', response);
-              this.opponentsMove.set(response.moveDetails);
+              this.opponentsMove.set(response.move);
             }
           }
           this.stateManagerService.updateIsMyTurn(isMyTurn(response.fen, myColor));

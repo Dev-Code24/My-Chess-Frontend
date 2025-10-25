@@ -2,14 +2,15 @@ import { Component, computed, effect, ElementRef, inject, input, OnDestroy, outp
 import { Piece, PieceColor, MoveDetails, Move, PieceDetails, CapturedPieceDetails } from './../../@interfaces';
 import { AvatarComponent } from "@shared/components/avatar/avatar.component";
 import { UserDetails } from '@shared/@interface';
-import { validateMove, getTargetPiece, getCapturedPiecesOfAColor, parseFen } from '../../@utils';
+import { validateMove, getCapturedPiecesOfAColor, parseFen } from '../../@utils';
 import { SubSink } from '@shared/@utils';
 import { timer } from 'rxjs';
 import { StateManagerService } from '@shared/services';
+import { PromotionDialogComponent } from "../promotion-dialog/promotion-dialog.component";
 
 @Component({
   selector: 'app-chessboard',
-  imports: [AvatarComponent],
+  imports: [AvatarComponent, PromotionDialogComponent],
   templateUrl: './chessboard.component.html',
   styleUrl: './chessboard.component.scss'
 })
@@ -34,6 +35,8 @@ export class ChessboardComponent implements OnDestroy {
   protected hoverSquareCol = signal(0);
   protected isHoverSquareVisible = signal(false);
   protected isMyTurn = signal<boolean | undefined>(undefined);
+  protected isPromotionDialogVisible = signal<boolean>(false);
+  protected pawnToBePromoted = signal<PieceDetails | null>(null);
 
   private readonly subsink = new SubSink()
   private readonly chessBoard = viewChild<ElementRef<HTMLDivElement>>('chessBoardRef');
@@ -43,10 +46,7 @@ export class ChessboardComponent implements OnDestroy {
     const opponentsMove = this.opponentsMove();
     const lastOpponentMove = this.lastOpponentMove();
     if (opponentsMove && lastOpponentMove) {
-      return lastOpponentMove &&
-        lastOpponentMove.to.row === opponentsMove.to.row &&
-        lastOpponentMove.to.col === opponentsMove.to.col &&
-        lastOpponentMove.piece.id === opponentsMove.piece.id;
+      return lastOpponentMove && JSON.stringify(lastOpponentMove) === JSON.stringify(opponentsMove);
     }
 
     return false;
@@ -63,7 +63,12 @@ export class ChessboardComponent implements OnDestroy {
     effect(() => {
       const opponentsMove = this.opponentsMove();
       if (opponentsMove && !this.isOpponentsMoveSame()) {
-        this.updatePiece(7 - opponentsMove.to.row, opponentsMove.to.col, opponentsMove.piece, opponentsMove.moveDetails);
+        this.updatePiece(
+          7 - opponentsMove.to.row,
+          opponentsMove.to.col,
+          opponentsMove.piece,
+          opponentsMove.moveDetails
+        );
         this.lastOpponentMove.set(opponentsMove);
       }
     });
@@ -227,14 +232,66 @@ export class ChessboardComponent implements OnDestroy {
     }
   }
 
+  protected handlePromotionPieceSelection(
+    pieces: { oldPieceDetails: PieceDetails, promotedPieceDetails: PieceDetails }
+  ): void {
+    this.pawnToBePromoted.set(null);
+
+    const { oldPieceDetails, promotedPieceDetails } = pieces;
+    this.pieces.update((allPieces: PieceDetails[]) => {
+      let allOldPieces = [...allPieces];
+      const oldPawnIndex = allOldPieces.findIndex((piece: PieceDetails) => oldPieceDetails.id === piece.id);
+      const oldPawn = JSON.parse(JSON.stringify(allOldPieces[oldPawnIndex]));
+      if (oldPawn) {
+        oldPawn.type = promotedPieceDetails.type;
+        oldPawn.id = promotedPieceDetails.id;
+        oldPawn.image = promotedPieceDetails.image;
+        oldPawn.hasMoved = true;
+      }
+
+      allOldPieces.splice(oldPawnIndex, 1);
+      allOldPieces.push(oldPawn);
+      return allOldPieces;
+    });
+    const oldPiece: Piece = {
+      color: oldPieceDetails.color,
+      id: oldPieceDetails.id,
+      col: oldPieceDetails.col,
+      row: oldPieceDetails.row,
+      hasMoved: oldPieceDetails.hasMoved,
+      type: oldPieceDetails.type
+    };
+    const promotedPiece: Piece = {
+      col: promotedPieceDetails.col,
+      color: promotedPieceDetails.color,
+      hasMoved: promotedPieceDetails.hasMoved,
+      id: promotedPieceDetails.id,
+      row: promotedPieceDetails.row,
+      type: promotedPieceDetails.type,
+    };
+
+    this.move.emit({
+      piece: oldPiece,
+      moveDetails: { valid: true, promotion: true, promotedPiece },
+      to: { row: oldPiece.row, col: oldPiece.col },
+    });
+  }
+
   private initBoard(): void {
     const boardOrientation = this.whoIsBlackPlayer() === 'me' ? 'flip' : 'normal';
     const pieces = parseFen(this.chessboardFen(), boardOrientation);
 
-    if (boardOrientation === 'normal') {
-      this.pieces.set([...pieces.w, ...pieces.b]);
-    } else {
-      this.pieces.set([...pieces.b, ...pieces.w]);
+    const arrangedPieces = boardOrientation === 'normal'
+        ? [...pieces.w, ...pieces.b]
+        : [...pieces.b, ...pieces.w];
+
+    this.pieces.set(arrangedPieces);
+    const pawnWaitingForPromotion = arrangedPieces.find(
+      (piece: PieceDetails) => piece.color === this.myColor() && piece.type === 'pawn' && piece.row === 0
+    );
+    if (pawnWaitingForPromotion) {
+      this.pawnToBePromoted.set(pawnWaitingForPromotion);
+      this.isPromotionDialogVisible.set(true);
     }
   }
 
@@ -244,9 +301,10 @@ export class ChessboardComponent implements OnDestroy {
     piece: Piece,
     moveDetails: MoveDetails
   ): void {
-    const targetPiece = moveDetails.capture;
-    this.pieces.update(allPieces => {
-      let allOldPieces = [...allPieces];
+    const targetPiece = moveDetails.targetPiece;
+    this.pieces.update((allPieces: PieceDetails[]) => {
+      let allOldPieces: PieceDetails[] = JSON.parse(JSON.stringify(allPieces));
+
       if (moveDetails.castling) {
         const rookCol = moveDetails.castling === 'kingside' ? 7 : 0;
         const newRookCol = moveDetails.castling === 'kingside' ? 5 : 3;
@@ -258,27 +316,48 @@ export class ChessboardComponent implements OnDestroy {
           return p;
         });
       } else if (moveDetails.enPassant) {
-        const capturedPawn = moveDetails.capture;
+        const capturedPawn = moveDetails.targetPiece;
         if (capturedPawn) { allOldPieces = allOldPieces.filter(p => p.id !== capturedPawn.id); }
         allOldPieces = allOldPieces.map(p =>
           p.id === piece.id ? { ...p, row: targetRow, col: targetCol, hasMoved: true } : p
         );
+      } else if (moveDetails.promotion) {
+        const pawnPieceDetails: PieceDetails = {
+          ...piece,
+          image: `/${piece.color}p.png`,
+          row: targetRow,
+          col: targetCol,
+          hasMoved: true
+        };
+        console.log('moveDetails', moveDetails);
+        if (moveDetails.promotedPiece) {
+          const promotedPiece: Piece = JSON.parse(JSON.stringify(moveDetails.promotedPiece));
+          const oldPawn = allOldPieces.find((p: PieceDetails) => p.id === piece.id);
+          if (oldPawn) {
+            oldPawn.type = promotedPiece.type;
+            oldPawn.id = promotedPiece.id;
+            oldPawn.image = `./${promotedPiece.color}${promotedPiece.type.charAt(0)}.png`;
+          }
+        } else {
+          this.pawnToBePromoted.set(pawnPieceDetails);
+          this.isPromotionDialogVisible.set(true);
+        }
       }
 
       if (targetPiece) { allOldPieces = allOldPieces.filter(p => p.id !== targetPiece.id); }
 
       return allOldPieces.map(p => {
         if (p.id === piece.id) {
-          const a = { ...p, row: targetRow, col: targetCol, hasMoved: true }
+          const updatedPiece = { ...p, row: targetRow, col: targetCol, hasMoved: true }
           if (p.type === 'pawn') {
-            if (moveDetails.situation === 'doubleStep') { a.enPassantAvailable = true; }
+            if (moveDetails.situation === 'doubleStep') { updatedPiece.enPassantAvailable = true; }
             else {
-              a.enPassantAvailable = false;
-              delete a.enPassantAvailable;
+              delete updatedPiece.enPassantAvailable;
             }
           }
-          return a;
-        } else { return p; }
+          return updatedPiece;
+        }
+        return p;
       });
     });
 
@@ -301,14 +380,12 @@ export class ChessboardComponent implements OnDestroy {
         piece.enPassantAvailable = true;
       }
       this.move.emit({
-        targetPiece: targetPiece ?? null,
+        moveDetails,
         piece,
         to: { row: targetRow, col: targetCol },
-        moveDetails
       });
 
       console.log({
-        targetPiece: targetPiece ?? null,
         piece,
         to: { row: targetRow, col: targetCol },
         moveDetails

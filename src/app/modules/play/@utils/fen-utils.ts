@@ -9,8 +9,9 @@ export function parseFen(fen: string, boardOrientation: 'normal' | 'flip'): { w:
   const bpieces: PieceDetails[] = [];
   const wpieces: PieceDetails[] = [];
 
-  rows.forEach((row, rowIndex) => {
+  rows.forEach((row, index) => {
     let col = 0;
+    const rowIndex = boardOrientation === 'normal' ? index : 7 - index;
     for (const char of row) {
       const regex = /[1-8]/;
       if (regex.test(char)) {
@@ -22,7 +23,7 @@ export function parseFen(fen: string, boardOrientation: 'normal' | 'flip'): { w:
           id: `${color}-${type}-${col}`,
           type,
           color,
-          row: boardOrientation === 'normal' ? rowIndex : 7 - rowIndex,
+          row: rowIndex,
           col,
           hasMoved: false,
           image: `/${color}${type === 'knight' ? 'n' : type.charAt(0)}.png`,

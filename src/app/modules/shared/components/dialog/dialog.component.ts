@@ -1,5 +1,5 @@
 import {
-  ChangeDetectionStrategy, Component, computed, effect, ElementRef, input, output,
+  ChangeDetectionStrategy, Component, computed, effect, ElementRef, input, model, output,
   viewChild
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -22,8 +22,7 @@ export class DialogComponent {
     closable: true,
     backdrop: true,
   });
-  public isVisible = input.required<boolean>();
-  public isVisibleChange = output<boolean>();
+  public isVisible = model.required<boolean>();
   public onDialogClose = output();
 
   protected BG = COLORS.bg;
@@ -67,16 +66,16 @@ export class DialogComponent {
   }
 
   public show() {
-    this.isVisibleChange.emit(true);
+    this.isVisible.set(true);
   }
 
   public close() {
-    this.isVisibleChange.emit(false);
+    this.isVisible.set(false);
     this.onDialogClose.emit();
   }
 
   public toggle() {
-    this.isVisibleChange.emit(!this.isVisible());
+    this.isVisible.set(!this.isVisible());
   }
 
   protected onBackdropClick(event: MouseEvent) {

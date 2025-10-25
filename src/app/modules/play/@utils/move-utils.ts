@@ -48,7 +48,7 @@ export function validateMove(
           response.situation = 'squareUnderAttack';
         }
         response.valid = true;
-        response.promotion = targetRow === (piece.color === 'w' ? 0 : 7);
+        response.promotion = targetRow === 0;
         return response;
       }
 
@@ -71,8 +71,8 @@ export function validateMove(
           response.situation = 'squareUnderAttack';
         }
         response.valid = true;
-        response.capture = targetPiece;
-        console.log(targetPiece);
+        response.targetPiece = targetPiece;
+        response.promotion = targetRow === 0;
         return response;
       }
 
@@ -99,7 +99,7 @@ export function validateMove(
             hasMoved: enPassantPawnDetails.hasMoved,
             enPassantAvailable: enPassantPawnDetails.enPassantAvailable
            };
-          response.capture = enPassantPawnPiece;
+          response.targetPiece = enPassantPawnPiece;
           response.enPassant = true;
           return response;
         }
@@ -115,7 +115,7 @@ export function validateMove(
             response.situation = 'squareUnderAttack';
           }
           response.valid = true;
-          response.capture = targetPiece ?? undefined;
+          response.targetPiece = targetPiece ?? undefined;
           return response;
         }
       }
@@ -130,7 +130,7 @@ export function validateMove(
           response.situation = 'squareUnderAttack';
         }
         response.valid = true;
-        response.capture = targetPiece ?? undefined;
+        response.targetPiece = targetPiece ?? undefined;
         return response;
       }
       return response;
@@ -142,7 +142,7 @@ export function validateMove(
             response.situation = 'squareUnderAttack';
           }
           response.valid = true;
-          response.capture = targetPiece ?? undefined;
+          response.targetPiece = targetPiece ?? undefined;
           return response;
         }
       }
@@ -155,7 +155,7 @@ export function validateMove(
             response.situation = 'squareUnderAttack';
           }
           response.valid = true;
-          response.capture = targetPiece ?? undefined;
+          response.targetPiece = targetPiece ?? undefined;
           return response;
         }
       }
@@ -168,7 +168,7 @@ export function validateMove(
           return { ...response, valid: false, situation: 'squareUnderAttack' };
         }
         response.valid = true;
-        response.capture = targetPiece ?? undefined;
+        response.targetPiece = targetPiece ?? undefined;
         return response;
       }
 
