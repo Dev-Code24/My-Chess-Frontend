@@ -4,18 +4,18 @@ import { CreateRoomApiResponse, JoinRoomApiPayload, JoinRoomApiResponse } from '
 import { CommonConnectBackendService } from '@shared/services';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class HomeConnectBackendService {
   private readonly commonConnectBackend = inject(CommonConnectBackendService);
 
-  constructor() { }
-
+  constructor() {}
+  // TODO: Change join room to use dynamic route instead of request body
   public joinRoom(roomId: JoinRoomApiPayload): Observable<JoinRoomApiResponse> {
     return this.commonConnectBackend.post<JoinRoomApiResponse>('/room/join', roomId);
   }
 
   public createRoom(): Observable<CreateRoomApiResponse> {
-    return this.commonConnectBackend.post('/room/create', {});
+    return this.commonConnectBackend.post<CreateRoomApiResponse>('/room/create');
   }
 }

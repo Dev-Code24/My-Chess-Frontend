@@ -1,0 +1,42 @@
+<mc-dialog
+  [(isVisible)]="visible"
+  (onDialogClose)="close()"
+  [config]="{
+    title: 'Promote Pawn',
+    width: '380px',
+    height: '275px',
+    top: '50%',
+    left: '50%',
+    closable: true
+  }">
+
+  <div class="flex flex-col items-center justify-center gap-4">
+    <p class="text-lg font-medium text-gray-700">
+      Choose a piece to promote your pawn:
+    </p>
+
+    <div class="flex justify-center gap-4">
+      @for (type of promotionOptions; track type) {
+        <img
+          [src]="pieceImage(pawn().color, type)"
+          alt="{{ type }}"
+          (click)="selectPiece(type)"
+          class="w-12 h-12 cursor-pointer rounded-lg border-2 transition-all duration-150"
+          [class.border-lime-600]="selectedType() === type"
+          [class.border-transparent]="selectedType() !== type"
+          [class.bg-lime-100]="selectedType() === type"
+        />
+      }
+    </div>
+  </div>
+
+  <div slot="footer">
+    <button
+      class="px-4 py-2 rounded-md bg-lime-600 text-white hover:bg-lime-700 disabled:opacity-50"
+      [disabled]="!selectedType()"
+      type="button"
+      (click)="confirm()">
+      Confirm
+    </button>
+  </div>
+</mc-dialog>

@@ -1,0 +1,105 @@
+<div class="board-layout w-full h-full flex flex-col justify-center items-center gap-3">
+  <div class="board-layout-player-top pr-2 flex justify-end transition-[width] ease-in-out">
+    <div class="captured-pieces captured-pieces-by-opponent grow h-full flex items-center gap-1 flex-wrap">
+      @for (piece of capturedPiecesByOpponent(); track $index) {
+        @if (piece.count) {
+          <div class="flex items-center">
+            <div
+              class="piece {{ piece.type }} w-8 h-8 sm:w-10 sm:h-10 z-1 transition-transform
+              select-none bg-no-repeat"
+              [style.background-size]="'100%'"
+              [style.background-image]="'url(' + piece.image + ')'">
+            </div>
+            <span class="text-base sm:text-xl sm:-ml-2">× {{ piece.count }}</span>
+          </div>
+        }
+      }
+    </div>
+    <mc-avatar [label]="opponent()!.username" [username]="opponent()!.username" />
+  </div>
+  <div class="board-layout-board flex items-center justify-center">
+    <div #chessBoardRef
+      class="chess-board relative aspect-square rounded-md"
+      [class.flip]="whoIsBlackPlayer() === 'me'"
+      (click)="onBoardClick($event)"
+      (mousemove)="onBoardMouseMove($event)"
+      (mouseleave)="onBoardMouseLeave()">
+      <svg
+        class="coordinates absolute left-[0] top-[0] font-[600]"
+        viewBox="0 0 100 100" aria-hidden="true">
+        <text x="0.5" y="3" font-size="2.5" class="coordinate">8</text>
+        <text x="0.5" y="15.25" font-size="2.5" class="coordinate">7</text>
+        <text x="0.5" y="27.75" font-size="2.5" class="coordinate">6</text>
+        <text x="0.5" y="40.25" font-size="2.5" class="coordinate">5</text>
+        <text x="0.5" y="52.75" font-size="2.5" class="coordinate">4</text>
+        <text x="0.5" y="65.25" font-size="2.5" class="coordinate">3</text>
+        <text x="0.5" y="77.75" font-size="2.5" class="coordinate">2</text>
+        <text x="0.5" y="90.25" font-size="2.5" class="coordinate">1</text>
+        <text x="98" y="99" font-size="2.5" class="coordinate">h</text>
+        <text x="85.5" y="99" font-size="2.5" class="coordinate">g</text>
+        <text x="73" y="99" font-size="2.5" class="coordinate">f</text>
+        <text x="60.5" y="99" font-size="2.5" class="coordinate">e</text>
+        <text x="48" y="99" font-size="2.5" class="coordinate">d</text>
+        <text x="35.5" y="99" font-size="2.5" class="coordinate">c</text>
+        <text x="23" y="99" font-size="2.5" class="coordinate">b</text>
+        <text x="10.5" y="99" font-size="2.5" class="coordinate">a</text>
+      </svg>
+
+      <div
+        class="hover-square absolute pointer-events-none w-[12.5%] h-[12.5%]"
+        [style.visibility]="isHoverSquareVisible() ? 'visible' : 'hidden'"
+        [style.left.%]="hoverSquareCol() * 12.5" [style.top.%]="hoverSquareRow() * 12.5">
+        <svg viewBox="0 0 100 100" class="w-full h-full">
+          <rect
+            x="-0.25" y="0" width="100" height="100"
+            fill="none"
+            stroke-width="15"
+            stroke="rgba(255, 255, 255, 0.75)"
+            shape-rendering="crispEdges"
+            vector-effect="non-scaling-stroke"
+          />
+        </svg>
+      </div>
+
+      <div class="pieces absolute inset-0">
+        @for (piece of pieces(); track $index) {
+          <div
+            class="piece absolute transition-transform w-[12.5%] h-[12.5%] select-none {{ piece.id }}"
+            [style.background-size]="'100%'"
+            [style.background-image]="'url(' + piece.image + ')'"
+            [style.cursor]="myColor() === piece.color ? 'grab' : ''"
+            [style.zIndex]="draggingPiece()?.id === piece.id ? 10 : 1"
+            [style.left.%]="draggingPiece()?.id === piece.id ? dragX() : piece.col * 12.5"
+            [style.top.%]="draggingPiece()?.id === piece.id ? dragY() : piece.row * 12.5"
+            (mousedown)="onPieceMouseDown($event, piece)"
+            (touchstart)="onPieceMouseDown($event, piece)">
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+  <div class="board-layout-player-bottom pr-2 flex justify-end transition-[width] ease-in-out">
+    <div class="captured-pieces captured-pieces-by-me grow h-full flex items-center gap-1 flex-wrap">
+      @for (piece of capturedPiecesByMe(); track $index) {
+        @if (piece.count) {
+          <div class="flex items-center">
+            <div
+              class="piece {{ piece.type }} w-8 h-8 sm:w-10 sm:h-10 z-1 transition-transform select-none bg-no-repeat"
+              [style.background-size]="'100%'"
+              [style.background-image]="'url(' + piece.image + ')'">
+            </div>
+            <span class="text-base sm:text-xl sm:-ml-2">× {{ piece.count }}</span>
+          </div>
+        }
+      }
+    </div>
+    <mc-avatar [label]="me()!.username" [username]="me()!.username" />
+  </div>
+</div>
+
+@if (pawnToBePromoted() && myColor() === pawnToBePromoted()!.color) {
+  <app-promotion-dialog
+  [pawn]="pawnToBePromoted()!"
+  [(visible)]="isPromotionDialogVisible"
+  (onPromote)="handlePromotionPieceSelection($event)" />
+}

@@ -1,8 +1,11 @@
-<div class="navbar-container h-full w-full flex justify-between items-center">
+<div
+  class="navbar-container h-full w-full flex justify-between items-center {{ user().details!.inGame ? 'justify-center' : 'justify-between' }}">
   <div class="navbar-mc-logo-container">
     <MyChessLogo size="sm" />
   </div>
-  <div class="navbar-mc-avatar-container">
-    <mc-avatar [label]="user().details!.username" />
-  </div>
+  @if (!user().details!.inGame) {
+    <div class="navbar-mc-avatar-container">
+      <mc-avatar [label]="user().details!.username" [actionable]="true"  />
+    </div>
+  }
 </div>

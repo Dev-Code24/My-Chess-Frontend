@@ -18,11 +18,11 @@ function mulberry32(seed: number): () => number {
   };
 }
 
-export function randomHSLGenerator(seed?: string): [string, string, string, string] {
+export function randomHSLGenerator(seed?: string): [string, number, number, number] {
   const rand = seed ? mulberry32(simpleStringToHash(seed)) : Math.random;
-  const hue = Math.floor(rand() * 360).toString();
-  const saturation = Math.floor(40 + rand() * 30).toString();  // 40–80%
-  const lightness = Math.floor(70 + rand() * 20).toString();  // 70–90%
+  const hue = Math.floor(rand() * 360);
+  const saturation = Math.floor(40 + rand() * 30);  // 40–80%
+  const lightness = Math.floor(70 + rand() * 20);  // 70–90%
 
   return [`hsl(${hue}, ${saturation}%, ${lightness}%)`, hue, saturation, lightness];
 }

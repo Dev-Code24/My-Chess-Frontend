@@ -1,0 +1,352 @@
+import { CapturedPieceDetails, MoveDetails, Piece, PieceColor, PieceDetails, PieceType } from "../@interfaces";
+import { fenToPieceType } from "./constants";
+
+export function getTargetPiece(
+  targetRow: number,
+  targetCol: number,
+  allPieces: PieceDetails[],
+  piece: Piece
+): Piece | null | undefined {
+  const targetPieceDetails = allPieces.find(p => p.col === targetCol && p.row === targetRow);
+
+  if (targetPieceDetails === undefined) { return targetPieceDetails; }
+
+  const targetPiece: Piece = {
+    id: targetPieceDetails.id,
+    row: targetPieceDetails.row,
+    col: targetPieceDetails.col,
+    color: targetPieceDetails.color,
+    type: targetPieceDetails.type,
+    hasMoved: targetPieceDetails.hasMoved,
+  };
+
+  return targetPiece.color === piece.color ? null : targetPiece;
+}
+
+export function validateMove(
+  targetRow: number,
+  targetCol: number,
+  myColor: PieceColor,
+  allPieces: PieceDetails[],
+  piece: Piece,
+): MoveDetails {
+  const targetPiece = getTargetPiece(targetRow, targetCol, allPieces, piece);
+  if (targetPiece === null) return { valid: false };
+
+  const rowDiff = targetRow - piece.row;
+  const colDiff = targetCol - piece.col;
+  const response: MoveDetails = { valid: false };
+
+  switch (piece.type) {
+    case 'pawn': {
+      const direction = getPawnDirection(piece.color, myColor);
+      const startRow = piece.color === 'w' ? (myColor === 'w' ? 6 : 1) : (myColor === 'w' ? 1 : 6);
+
+      // single forward
+      if (!targetPiece && rowDiff === direction && colDiff === 0) {
+        if (isSquareAttacked(targetRow, targetCol, myColor, allPieces)) {
+          response.situation = 'squareUnderAttack';
+        }
+        response.valid = true;
+        response.promotion = targetRow === 0;
+        return response;
+      }
+
+      // double forward from start
+      if (!targetPiece && piece.row === startRow && rowDiff === 2 * direction && colDiff === 0) {
+        const midRow = piece.row + direction;
+        if (!allPieces.some(p => p.row === midRow && p.col === piece.col)) {
+          if (isSquareAttacked(targetRow, targetCol, myColor, allPieces)) {
+            response.situation = 'squareUnderAttack';
+          }
+          response.valid = true;
+          response.situation = 'doubleStep';
+          return response;
+        }
+      }
+
+      // capture
+      if (targetPiece && rowDiff === direction && Math.abs(colDiff) === 1) {
+        if (isSquareAttacked(targetRow, targetCol, myColor, allPieces)) {
+          response.situation = 'squareUnderAttack';
+        }
+        response.valid = true;
+        response.targetPiece = targetPiece;
+        response.promotion = targetRow === 0;
+        return response;
+      }
+
+      // En Passant
+      const enPassantRow = myColor === 'b' ? piece.color === 'w' ? 4 : 3 : piece.color === 'w' ? 3 : 4;
+      const enPassantTargetCol = piece.col + colDiff;
+      if (rowDiff === direction && Math.abs(colDiff) === 1 && targetRow - enPassantRow === direction) {
+        const enPassantPawnDetails = allPieces.find(p =>
+          p.row === enPassantRow &&
+          p.col === enPassantTargetCol &&
+          p.type === 'pawn' &&
+          p.color !== piece.color &&
+          p.enPassantAvailable
+        );
+
+        if (enPassantPawnDetails) {
+          response.valid = true;
+          const enPassantPawnPiece: Piece = {
+            id: enPassantPawnDetails.id,
+            row: enPassantPawnDetails.row,
+            col: enPassantPawnDetails.col,
+            color: enPassantPawnDetails.color,
+            type: enPassantPawnDetails.type,
+            hasMoved: enPassantPawnDetails.hasMoved,
+            enPassantAvailable: enPassantPawnDetails.enPassantAvailable
+           };
+          response.targetPiece = enPassantPawnPiece;
+          response.enPassant = true;
+          return response;
+        }
+      }
+
+      return response;
+    }
+
+    case 'rook':
+      if (rowDiff === 0 || colDiff === 0) {
+        if (isPathClear(piece.row, piece.col, targetRow, targetCol, allPieces)) {
+          if (isSquareAttacked(targetRow, targetCol, myColor, allPieces)) {
+            response.situation = 'squareUnderAttack';
+          }
+          response.valid = true;
+          response.targetPiece = targetPiece ?? undefined;
+          return response;
+        }
+      }
+      return response;
+
+    case 'knight':
+      if (
+        (Math.abs(rowDiff) === 2 && Math.abs(colDiff) === 1) ||
+        (Math.abs(rowDiff) === 1 && Math.abs(colDiff) === 2)
+      ) {
+        if (isSquareAttacked(targetRow, targetCol, myColor, allPieces)) {
+          response.situation = 'squareUnderAttack';
+        }
+        response.valid = true;
+        response.targetPiece = targetPiece ?? undefined;
+        return response;
+      }
+      return response;
+
+    case 'bishop':
+      if (Math.abs(rowDiff) === Math.abs(colDiff)) {
+        if (isPathClear(piece.row, piece.col, targetRow, targetCol, allPieces)) {
+          if (isSquareAttacked(targetRow, targetCol, myColor, allPieces)) {
+            response.situation = 'squareUnderAttack';
+          }
+          response.valid = true;
+          response.targetPiece = targetPiece ?? undefined;
+          return response;
+        }
+      }
+      return response;
+
+    case 'queen':
+      if (rowDiff === 0 || colDiff === 0 || Math.abs(rowDiff) === Math.abs(colDiff)) {
+        if (isPathClear(piece.row, piece.col, targetRow, targetCol, allPieces)) {
+          if (isSquareAttacked(targetRow, targetCol, myColor, allPieces)) {
+            response.situation = 'squareUnderAttack';
+          }
+          response.valid = true;
+          response.targetPiece = targetPiece ?? undefined;
+          return response;
+        }
+      }
+      return response;
+
+    case 'king': {
+      // Normal king move
+      if (Math.abs(rowDiff) <= 1 && Math.abs(colDiff) <= 1) {
+        if (isSquareAttacked(targetRow, targetCol, myColor, allPieces)) {
+          return { ...response, valid: false, situation: 'squareUnderAttack' };
+        }
+        response.valid = true;
+        response.targetPiece = targetPiece ?? undefined;
+        return response;
+      }
+
+      // Castling
+      if (!piece.hasMoved && rowDiff === 0 && Math.abs(colDiff) === 2) {
+        const rookCol = colDiff > 0 ? 7 : 0;  // kingside vs queenside
+        const rook = allPieces.find((p) =>
+          p.type === 'rook' &&
+          p.row === piece.row &&
+          p.col === rookCol &&
+          p.color === piece.color && !p.hasMoved
+        );
+
+        if (!rook) { return response; }
+
+        // Path clear between king and rook?
+        const colStep = colDiff > 0 ? 1 : -1;
+        let clear = true;
+        for (let c = piece.col + colStep; c !== rookCol; c += colStep) {
+          if (allPieces.some(p => p.row === piece.row && p.col === c)) {
+            clear = false;
+            break;
+          }
+        }
+        if (!clear) { return response; }
+
+        if (
+          isSquareAttacked(piece.row, piece.col, myColor, allPieces) ||
+          isSquareAttacked(piece.row, piece.col + colStep, myColor, allPieces) ||
+          isSquareAttacked(piece.row, rookCol, myColor, allPieces)
+        ) {
+          return { ...response, valid: false, situation: 'kingInCheckDuringCastling' };
+        }
+        response.valid = true;
+        response.castling = colDiff > 0 ? 'kingside' : 'queenside';
+        return response;
+      }
+
+      return response;
+    }
+
+    default:
+      return response;
+  }
+}
+
+export function isSquareAttacked(
+  targetRow: number,
+  targetCol: number,
+  myColor: PieceColor,
+  allPieces: PieceDetails[],
+): boolean {
+  for (const piece of allPieces) {
+    if (piece.color === myColor) { continue; }
+
+    const rowDiff = targetRow - piece.row;
+    const colDiff = targetCol - piece.col;
+
+    switch (piece.type) {
+      case 'pawn': {
+        const direction = getPawnDirection(piece.color, myColor);
+        if (Math.abs(colDiff) === 1 && rowDiff === direction) { return true; }
+        break;
+      }
+
+      case 'rook': {
+        if (rowDiff === 0 || colDiff === 0) {
+          if (isPathClear(piece.row, piece.col, targetRow, targetCol, allPieces)) { return true; }
+        }
+        break;
+      }
+
+      case 'knight': {
+        if (
+          (Math.abs(rowDiff) === 2 && Math.abs(colDiff) === 1) ||
+          (Math.abs(rowDiff) === 1 && Math.abs(colDiff) === 2)
+        ) {
+          return true;
+        }
+        break;
+      }
+
+      case 'bishop': {
+        if (Math.abs(rowDiff) === Math.abs(colDiff)) {
+          if (isPathClear(piece.row, piece.col, targetRow, targetCol, allPieces)) { return true; }
+        }
+        break;
+      }
+
+      case 'queen': {
+        if (rowDiff === 0 || colDiff === 0 || Math.abs(rowDiff) === Math.abs(colDiff)) {
+          if (isPathClear(piece.row, piece.col, targetRow, targetCol, allPieces)) { return true; }
+        }
+        break;
+      }
+
+      case 'king': {
+        if (Math.abs(rowDiff) <= 1 && Math.abs(colDiff) <= 1) { return true; }
+        break;
+      }
+    }
+  }
+
+  return false;
+}
+
+function isPathClear(
+  startRow: number,
+  startCol: number,
+  targetRow: number,
+  targetCol: number,
+  allPieces: PieceDetails[]
+): boolean {
+  const rowStep = targetRow === startRow ? 0 : (targetRow > startRow ? 1 : -1);
+  const colStep = targetCol === startCol ? 0 : (targetCol > startCol ? 1 : -1);
+  let row = startRow + rowStep;
+  let col = startCol + colStep;
+
+  while (row !== targetRow || col !== targetCol) {
+    if (allPieces.some(p => p.row === row && p.col === col)) return false;
+    row += rowStep;
+    col += colStep;
+  }
+
+  return true;
+}
+
+function getPawnDirection(color: PieceColor, myColor: PieceColor): number {
+  const whiteStartsAtBottom = myColor === 'w';
+  if (color === 'w') {
+    return whiteStartsAtBottom ? -1 : 1;
+  } else {
+    return whiteStartsAtBottom ? 1 : -1;
+  }
+}
+
+export function getCapturedPiecesOfAColor(
+  color: PieceColor,
+  capturedPieces: string
+): CapturedPieceDetails[] {
+  const capturedPiecesList: CapturedPieceDetails[] = [
+    { type: 'pawn', color, count: 0, image: `/${color}p.png` },
+    { type: 'rook', color, count: 0, image: `/${color}r.png` },
+    { type: 'knight', color, count: 0, image: `/${color}n.png` },
+    { type: 'bishop', color, count: 0, image: `/${color}b.png` },
+    { type: 'queen', color, count: 0, image: `/${color}q.png` },
+    { type: 'king', color, count: 0, image: `/${color}k.png` },
+  ];
+
+  if (!capturedPieces) return capturedPiecesList;
+
+  const [blackSection, whiteSection] = capturedPieces.split('/');
+  const section = color === 'b' ? blackSection : whiteSection;
+
+  let currentPiece = '';
+  let number = '';
+
+  for (const c of section) {
+    if (/[a-zA-Z]/.test(c)) {
+      if (currentPiece && number) {
+        const defaultPiece = capturedPiecesList.find(
+          (p) => p.type === fenToPieceType[currentPiece.toLowerCase()]
+        );
+        if (defaultPiece) defaultPiece.count = parseInt(number);
+        number = '';
+      }
+      currentPiece = c;
+    } else if (/\d/.test(c)) {
+      number += c;
+    }
+  }
+
+  if (currentPiece && number) {
+    const defaultPiece = capturedPiecesList.find(
+      (p) => p.type === fenToPieceType[currentPiece.toLowerCase()]
+    );
+    if (defaultPiece) defaultPiece.count = parseInt(number);
+  }
+
+  return capturedPiecesList;
+}

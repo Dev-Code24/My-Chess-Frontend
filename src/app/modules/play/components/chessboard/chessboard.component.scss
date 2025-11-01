@@ -1,0 +1,58 @@
+$navbar-height: 4rem;
+$players-height: 7rem;
+$max-size: 80rem;
+$min-size: 20rem;
+$page-padding: 2rem;
+$avail-width: calc(100vw - #{$page-padding});
+$avail-height: calc(100vh - #{$navbar-height} - #{$players-height} - #{$page-padding});
+$black-tile: #739552;
+$white-tile: #ebecd0;
+
+.board-layout-player {
+  &-top,
+  &-bottom {
+    width: min(#{$max-size}, max(#{$min-size}, min(95vw, #{$avail-width}, #{$avail-height})));
+  }
+}
+
+.chess-board {
+  width: min(#{$max-size}, max(#{$min-size}, min(95vw, #{$avail-width}, #{$avail-height})));
+  height: min(#{$max-size}, max(#{$min-size}, min(95vh, #{$avail-width}, #{$avail-height})));
+  background-image: url('/chess-board.png');
+  background-size: cover;
+  background-position: center;
+
+  .coordinates {
+    user-select: none;
+    .coordinate {
+      font-weight: 600;
+
+      &:nth-child(even) {
+        fill: $white-tile;
+      }
+
+      &:nth-child(odd) {
+        fill: $black-tile;
+      }
+    }
+  }
+
+  &.flip {
+    transform: rotate(90deg);
+
+    .pieces,
+    .coordinates {
+      transform: rotate(270deg);
+
+      .coordinate {
+        &:nth-child(even) {
+          fill: $black-tile;
+        }
+
+        &:nth-child(odd) {
+          fill: $white-tile;
+        }
+      }
+    }
+  }
+}
