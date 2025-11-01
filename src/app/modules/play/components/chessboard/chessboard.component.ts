@@ -63,11 +63,14 @@ export class ChessboardComponent implements OnDestroy {
     effect(() => {
       const opponentsMove = this.opponentsMove();
       if (opponentsMove && !this.isOpponentsMoveSame()) {
+        const targetRow = 7 - opponentsMove.to.row;
+        const targetCol = opponentsMove.to.col;
         this.updatePiece(
-          7 - opponentsMove.to.row,
-          opponentsMove.to.col,
+          targetRow,
+          targetCol,
           opponentsMove.piece,
-          opponentsMove.moveDetails
+          opponentsMove.moveDetails,
+          true
         );
         this.lastOpponentMove.set(opponentsMove);
       }
@@ -117,7 +120,7 @@ export class ChessboardComponent implements OnDestroy {
 
       if (selectedPiece) {
         const validMove = validateMove(targetRow, targetCol, this.myColor(), this.pieces(), selectedPiece);
-        if (validMove.valid) { this.updatePiece(targetRow, targetCol, selectedPiece, validMove); }
+        if (validMove.valid) { this.updatePiece(targetRow, targetCol, selectedPiece, validMove, false); }
         this.resetSelectedPiece();
       }
     }
@@ -217,7 +220,7 @@ export class ChessboardComponent implements OnDestroy {
       const targetRow = Math.min(7, Math.max(0, Math.floor((y / rect.height) * 8)));
       const validMove = validateMove(targetRow, targetCol, this.myColor(), this.pieces(), piece);
 
-      if (validMove.valid) { this.updatePiece(targetRow, targetCol, piece, validMove); }
+      if (validMove.valid) { this.updatePiece(targetRow, targetCol, piece, validMove, false); }
 
       if (!(targetRow === piece.row && targetCol === piece.col)) {
         this.subsink.sink = timer(0).subscribe(() => this.resetSelectedPiece());
@@ -299,12 +302,20 @@ export class ChessboardComponent implements OnDestroy {
     targetRow: number,
     targetCol: number,
     piece: Piece,
-    moveDetails: MoveDetails
+    moveDetails: MoveDetails,
+    isOpponentsMove: boolean
   ): void {
     const targetPiece = moveDetails.targetPiece;
+    // Setting row in the id as 7 - targetRow because, otherwise the id won't stay consistent on opponent's side
+    let newPieceId: string;
+    if (isOpponentsMove) {
+      newPieceId = `${piece.color}-${piece.type}-${piece.color === 'b' ? targetRow : 7 - targetRow}-${targetCol}`;
+    } else {
+      newPieceId = `${piece.color}-${piece.type}-${piece.color === 'b' ? 7 - targetRow : targetRow}-${targetCol}`;
+    }
+
     this.pieces.update((allPieces: PieceDetails[]) => {
       let allOldPieces: PieceDetails[] = JSON.parse(JSON.stringify(allPieces));
-
       if (moveDetails.castling) {
         const rookCol = moveDetails.castling === 'kingside' ? 7 : 0;
         const newRookCol = moveDetails.castling === 'kingside' ? 5 : 3;
@@ -324,12 +335,12 @@ export class ChessboardComponent implements OnDestroy {
       } else if (moveDetails.promotion) {
         const pawnPieceDetails: PieceDetails = {
           ...piece,
+          id: newPieceId,
           image: `/${piece.color}p.png`,
           row: targetRow,
           col: targetCol,
           hasMoved: true
         };
-        console.log('moveDetails', moveDetails);
         if (moveDetails.promotedPiece) {
           const promotedPiece: Piece = JSON.parse(JSON.stringify(moveDetails.promotedPiece));
           const oldPawn = allOldPieces.find((p: PieceDetails) => p.id === piece.id);
@@ -350,11 +361,13 @@ export class ChessboardComponent implements OnDestroy {
         if (p.id === piece.id) {
           const updatedPiece = { ...p, row: targetRow, col: targetCol, hasMoved: true }
           if (p.type === 'pawn') {
-            if (moveDetails.situation === 'doubleStep') { updatedPiece.enPassantAvailable = true; }
-            else {
+            if (moveDetails.situation === 'doubleStep') {
+              updatedPiece.enPassantAvailable = true;
+            } else {
               delete updatedPiece.enPassantAvailable;
             }
           }
+          updatedPiece.id = newPieceId;
           return updatedPiece;
         }
         return p;

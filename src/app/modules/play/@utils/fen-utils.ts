@@ -20,7 +20,7 @@ export function parseFen(fen: string, boardOrientation: 'normal' | 'flip'): { w:
         const color: PieceColor = char === char.toUpperCase() ? 'w' : 'b';
         const type: PieceType = fenToPieceType[char.toLowerCase()];
         const piece: PieceDetails = {
-          id: `${color}-${type}-${col}`,
+          id: `${color}-${type}-${index}-${col}`,
           type,
           color,
           row: rowIndex,
