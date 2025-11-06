@@ -6,11 +6,12 @@ import { PlayConnectBackendService } from '../../service/play-connect-backend.se
 import { RoomDetailsApiResponse, Move, PieceColor, LiveRoomInfo } from '../../@interfaces';
 import { StateManagerService } from '@shared/services';
 import { ChessboardComponent } from '../chessboard/chessboard.component';
-import { isMyTurn } from '../../@utils';
+import { HttpErrorResponse } from '@angular/common/http';
+import { LoaderDialogComponent } from "@shared/components/loader";
 
 @Component({
   selector: 'app-play',
-  imports: [ChessboardComponent],
+  imports: [ChessboardComponent, LoaderDialogComponent],
   templateUrl: './play.component.html',
   styleUrl: './play.component.scss'
 })
@@ -24,6 +25,7 @@ export class PlayComponent implements OnInit {
   protected opponentsMove = signal<Move | null>(null);
   protected chessboardFen = signal<string | undefined>(undefined);
   protected capturedPieces = signal<string | undefined>(undefined);
+  protected winner = signal<PieceColor | null>(null);
 
   private readonly subsink = new SubSink();
   private readonly stateManagerService = inject(StateManagerService);
@@ -33,7 +35,6 @@ export class PlayComponent implements OnInit {
     effect(() => this.me.set(this.stateManagerService.getUser().details!));
   }
   public ngOnInit(): void {
-    this.getLiveRoomDetails();
     this.getRoomDetails();
   }
 
@@ -46,7 +47,7 @@ export class PlayComponent implements OnInit {
       next: (data) => {
         console.log('you played', data);
       },
-      error: (err) => console.error(err),
+      error: (err: HttpErrorResponse) => console.error(err),
     });
   }
 
@@ -57,8 +58,8 @@ export class PlayComponent implements OnInit {
           this.roomNotification.set(response);
         } else if ('code' in response) {
           this.assignPlayerRoles(response.blackPlayer, response.whitePlayer);
+          this.assignWinner(response.gameStatus);
         } else {
-          const myColor: PieceColor = this.whoIsBlackPlayer() === 'me' ? 'b' : 'w';
           if (response.move.piece.color === 'b') {
             if (this.whoIsBlackPlayer() === 'opponent') {
               console.log('opponent moved:', response);
@@ -70,11 +71,9 @@ export class PlayComponent implements OnInit {
               this.opponentsMove.set(response.move);
             }
           }
-          this.stateManagerService.updateIsMyTurn(isMyTurn(response.fen, myColor));
-          console.log('set my turn to ', this.stateManagerService.isMyTurn());
         }
       },
-      error: (error: Event) => console.error(error)
+      error: (error: HttpErrorResponse) => console.error(error)
     });
   }
 
@@ -84,13 +83,16 @@ export class PlayComponent implements OnInit {
         if (response && response.data) {
           const { data } = response;
           this.assignPlayerRoles(data.blackPlayer, data.whitePlayer);
+          this.assignWinner(data.gameStatus);
           this.chessboardFen.set(data.fen);
           this.capturedPieces.set(data.capturedPieces);
           const whoIsBlackPlayer = this.whoIsBlackPlayer();
-          if (whoIsBlackPlayer) {
-            const myColor: PieceColor = this.whoIsBlackPlayer() === 'me' ? 'b' : 'w';
-            this.stateManagerService.updateIsMyTurn(isMyTurn(data.fen, myColor));
-          }
+        }
+      },
+      error: (error: HttpErrorResponse) => console.error(error),
+      complete: () => {
+        if (!this.winner()) {
+          this.getLiveRoomDetails();
         }
       }
     });
@@ -103,6 +105,13 @@ export class PlayComponent implements OnInit {
     } else if (whitePlayer && whitePlayer.email !== this.me()!.email) {
       this.opponent.set(whitePlayer);
       this.whoIsBlackPlayer.set('me');
+    }
+  }
+
+  private assignWinner(gameStatus: string): void {
+    if (gameStatus.includes('won')) {
+      const winner: PieceColor = gameStatus.includes('white') ? 'w' : 'b';
+      this.winner.set(winner);
     }
   }
 }

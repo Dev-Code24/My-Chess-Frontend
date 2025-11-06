@@ -1,0 +1,27 @@
+<mc-dialog
+  [isVisible]="isVisible()"
+  [config]="{
+    title: dialogTitle(),
+    width: '320px',
+    height: '220px',
+    closable: false,
+    left: '50%',
+    top: '50%'
+  }">
+  <div class="flex flex-col items-center justify-center gap-4">
+    <div class="flex justify-center gap-4">
+        <img
+          src="/{{winner()}}k.png"
+          class="w-12 h-12 cursor-pointer rounded-lg transition-all duration-150"
+        />
+    </div>
+  </div>
+  <div slot="footer">
+    <button
+      class="px-4 py-2 rounded-md bg-lime-700 text-white hover:bg-lime-600 cursor-pointer duration-250 delay-100"
+      type="button"
+      (click)="redirectToHome()">
+      Back to Home
+    </button>
+  </div>
+</mc-dialog>

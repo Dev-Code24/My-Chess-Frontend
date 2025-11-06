@@ -103,3 +103,7 @@
   [(visible)]="isPromotionDialogVisible"
   (onPromote)="handlePromotionPieceSelection($event)" />
 }
+
+@if (winner()) {
+  <app-game-over-dialog [winner]="winner()!" [myColor]="myColor()" />
+}

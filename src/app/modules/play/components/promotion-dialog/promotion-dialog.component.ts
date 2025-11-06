@@ -12,7 +12,7 @@ export class PromotionDialogComponent {
   // TODO: Take move as input instead of pawn to be promoted
   public readonly pawn = input.required<PieceDetails>();
   public visible = model.required<boolean>();
-  public onPromote = output<{oldPieceDetails: PieceDetails, promotedPieceDetails: PieceDetails}>();
+  public onPromote = output<{ oldPieceDetails: PieceDetails, promotedPieceDetails: PieceDetails }>();
 
   protected selectedType = signal<PieceType>('queen');
   protected readonly promotionOptions: PieceType[] = [

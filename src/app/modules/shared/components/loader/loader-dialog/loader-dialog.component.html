@@ -1,0 +1,19 @@
+<mc-dialog
+  [isVisible]="visible"
+  [config]="{
+    width: '300px',
+    height: '150px',
+    top: '50%',
+    left: '50%',
+    closable: false
+  }">
+  <div class="flex flex-col items-center justify-center flex-col gap-4">
+    <p class="text-lg font-medium text-gray-700">
+      {{ message() }}
+    </p>
+    <fa-icon
+      [icon]="spinnerIcon"
+      animation="spin"
+      class="text-xl sm:text-2xl" />
+  </div>
+</mc-dialog>

@@ -7,10 +7,11 @@ import { SubSink } from '@shared/@utils';
 import { timer } from 'rxjs';
 import { StateManagerService } from '@shared/services';
 import { PromotionDialogComponent } from "../promotion-dialog/promotion-dialog.component";
+import { GameOverDialogComponent } from "../game-over-dialog/game-over-dialog.component";
 
 @Component({
   selector: 'app-chessboard',
-  imports: [AvatarComponent, PromotionDialogComponent],
+  imports: [AvatarComponent, PromotionDialogComponent, GameOverDialogComponent],
   templateUrl: './chessboard.component.html',
   styleUrl: './chessboard.component.scss'
 })
@@ -21,6 +22,7 @@ export class ChessboardComponent implements OnDestroy {
   public readonly opponentsMove = input.required<Move | null>();
   public readonly chessboardFen = input.required<string>();
   public readonly capturedPieces = input.required<string>()
+  public readonly winner = input.required<PieceColor | null>();
   public move = output<Move>();
 
   protected myColor = computed<PieceColor>(() => this.whoIsBlackPlayer() === 'me' ? 'b' : 'w');
@@ -355,7 +357,12 @@ export class ChessboardComponent implements OnDestroy {
         }
       }
 
-      if (targetPiece) { allOldPieces = allOldPieces.filter(p => p.id !== targetPiece.id); }
+      if (targetPiece) {
+        allOldPieces = allOldPieces.filter(p => p.id !== targetPiece.id);
+        if (targetPiece.type === 'king') {
+
+        }
+      }
 
       return allOldPieces.map(p => {
         if (p.id === piece.id) {

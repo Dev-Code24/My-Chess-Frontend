@@ -8,6 +8,10 @@
       [opponentsMove]="opponentsMove()"
       (move)="onPieceMoved($event)"
       [chessboardFen]="chessboardFen()!"
-      [capturedPieces]="capturedPieces()!" />
+      [capturedPieces]="capturedPieces()!"
+      [winner]="winner()" />
   </div>
+} @else {
+  <mc-loaderDialog
+    message="Waiting for opponent..."/>
 }
