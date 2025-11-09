@@ -10,3 +10,15 @@ export interface DialogConfig {
   backdrop?: boolean;
   className?: string;
 };
+
+export type ToastVariant = 'default' | 'success' | 'error' | 'warning' | 'info';
+
+export interface ToastItem {
+  id: number;
+  message: string;
+  variant: ToastVariant;
+  duration: number;
+  visible: boolean;
+  paused: boolean;
+  createdAt: number;
+}

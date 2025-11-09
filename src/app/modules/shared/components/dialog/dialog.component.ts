@@ -8,12 +8,12 @@ import { COLORS } from '@shared/@utils/constants';
 
 @Component({
   selector: 'mc-dialog',
-  imports: [ CommonModule ],
+  imports: [CommonModule],
   templateUrl: './dialog.component.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DialogComponent {
-  public htmlDialogElementRef = viewChild<ElementRef<HTMLDialogElement>>('dialogRef');
+  public htmlDialogElementRef = viewChild<ElementRef<HTMLElement>>('dialogRef');
   public config = input<DialogConfig>({
     width: '300px',
     height: '200px',
@@ -22,47 +22,35 @@ export class DialogComponent {
     closable: true,
     backdrop: true,
   });
+
   public isVisible = model.required<boolean>();
   public onDialogClose = output();
 
   protected BG = COLORS.bg;
-  protected topAndLeft = computed<{ top: string, left: string }>(() => {
+  protected topAndLeft = computed(() => {
     const pattern = /[a-zA-Z%]+$/;
 
     const width = this.config().width!;
     const widthUnit = width.match(pattern)?.[0] || 'px';
-    const numWidth = parseFloat(width);
-    const halfWidth = numWidth / 2;
+    const halfWidth = parseFloat(width) / 2;
 
     const height = this.config().height!;
     const heightUnit = height.match(pattern)?.[0] || 'px';
-    const numHeight = parseFloat(height);
-    const halfHeight = numHeight / 2;
-    const top = `calc(${this.config().top} - ${halfHeight}${heightUnit})`;
-    const left = `calc(${this.config().left} - ${halfWidth}${widthUnit})`;
+    const halfHeight = parseFloat(height) / 2;
 
-    return { top, left };
+    return {
+      top: `calc(${this.config().top} - ${halfHeight}${heightUnit})`,
+      left: `calc(${this.config().left} - ${halfWidth}${widthUnit})`
+    };
   });
 
   constructor() {
     effect(() => {
-      const elementRef = this.htmlDialogElementRef();
-      const dialogElement = elementRef && elementRef.nativeElement;
-      if (dialogElement) {
-        if (this.isVisible()) {
-          dialogElement.showModal();
-        } else {
-          dialogElement.close();
-        }
+      const modal = this.htmlDialogElementRef();
+      if (this.isVisible() && modal) {
+        modal.nativeElement.focus();
       }
     });
-  }
-
-  public ngOnDestroy() {
-    const elementRef = this.htmlDialogElementRef();
-    if (elementRef && elementRef.nativeElement.open) {
-      elementRef.nativeElement.close();
-    }
   }
 
   public show() {
@@ -79,16 +67,17 @@ export class DialogComponent {
   }
 
   protected onBackdropClick(event: MouseEvent) {
-    const elementRef = this.htmlDialogElementRef();
-    if (elementRef && this.config().backdrop && event.target === elementRef.nativeElement) {
+    if (!this.config().backdrop) { return; }
+
+    const current = event.currentTarget as HTMLElement;
+    if (current && !current.dataset['backdrop']) {
       this.close();
     }
   }
 
   protected onEscapeKey(event: Event) {
-    if (this.config().closable) {
-      event.preventDefault();
-      this.close();
-    }
+  if (!this.config().closable) { return; }
+    event.preventDefault();
+    this.close();
   }
 }

@@ -1,22 +1,21 @@
 import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, Router, UrlTree } from '@angular/router';
-import { HttpErrorResponse } from '@angular/common/http';
 
 import { SubSink } from '@shared/@utils/Subsink';
 import { COLORS } from '@shared/@utils/constants';
 import { faDoorOpen, faPlayCircle } from '@fortawesome/free-solid-svg-icons';
-import { HomeDialog, JoinRoomApiPayload } from '../../@interface';
-import { DialogConfig } from '@shared/@interface';
+import { JoinRoomApiPayload } from '../../@interface';
+import { ApiError } from '@shared/@interface';
 import { JoinRoomComponent } from "../join-room/join-room.component";
 import { LinkButtonComponent } from "@shared/components/button/link-button/link-button.component";
-import { DialogComponent } from "@shared/components/dialog/dialog.component";
 import { HomeConnectBackendService } from 'modules/home/service/home-connect-backend.service';
 import { finalize } from 'rxjs';
 import { ButtonComponent } from "../../../shared/components/button/button/button.component";
+import { MyChessMessageService } from '@shared/services/message.service';
 
 @Component({
   selector: 'app-home',
-  imports: [LinkButtonComponent, DialogComponent, JoinRoomComponent, ButtonComponent],
+  imports: [LinkButtonComponent, JoinRoomComponent, ButtonComponent],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'
 })
@@ -25,27 +24,20 @@ export class HomeComponent implements OnInit, OnDestroy {
   protected joinRoomIcon = faDoorOpen;
   protected BG = COLORS.bg;
   protected joinRoomUrl!: UrlTree;
-  protected homeDialog = signal<HomeDialog>({ isVisible: false, formType: null });
-  protected homeDialogConfig: DialogConfig = {
-    width: '40rem',
-    height: '22rem',
-    top: '50%',
-    left: '50%',
-    closable: true,
-    backdrop: true,
-  };
+  protected isJoinFormDialogVisible = signal<boolean>(false);
   protected isLoading = signal<boolean>(false);
 
+  private readonly subsink = new SubSink();
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
+  private readonly messageService = inject(MyChessMessageService);
   private readonly connectBackend = inject(HomeConnectBackendService);
-  private readonly subsink = new SubSink();
 
   public ngOnInit(): void {
     this.joinRoomUrl = this.router.createUrlTree(['home'], { queryParams: { joinRoom: true, }, });
     this.subsink.sink = this.route.queryParams.subscribe((params) => {
       if (params['joinRoom'] === 'true') {
-        this.homeDialog.set({ isVisible: true, formType: 'join' });
+        this.isJoinFormDialogVisible.set(true);
       }
     });
   }
@@ -66,16 +58,11 @@ export class HomeComponent implements OnInit, OnDestroy {
       )
       .subscribe({
       next: (response) => {
-        code = response.data.code;
+          code = response.data.code;
+          this.messageService.showSuccess(`Joining the room with room code: ${code}`);
       },
-      error: (error: HttpErrorResponse) => {
-        console.log(error);
-      },
+      error: (error: ApiError) => this.messageService.showError(error.error.message),
     });
-  }
-
-  protected onDialogClose(): void {
-    this.router.navigate([], { relativeTo: this.route });
   }
 
   protected onRoomJoin(code: string): void {
@@ -87,11 +74,9 @@ export class HomeComponent implements OnInit, OnDestroy {
       )
       .subscribe({
         next: (response) => {
-          console.log('response', response);
+          this.messageService.showSuccess(`Joining the room with room code: ${response.data.code}`);
         },
-        error: (error: HttpErrorResponse) => {
-          console.log('error', error);
-        },
+        error: (error: ApiError) => this.messageService.showError(error.error.message),
         complete: () => {
           this.navigateToRoom(code);
         }

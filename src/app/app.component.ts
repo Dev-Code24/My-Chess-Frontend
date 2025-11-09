@@ -1,14 +1,15 @@
-import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit, signal, viewChild } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { UserInterface } from '@shared/@interface';
 import { DEFAULT_USER_DATA } from '@shared/@utils/constants';
 import { SubSink } from '@shared/@utils/Subsink';
 import { StateManagerService } from '@shared/services/state-manager.service';
 import { NavbarComponent } from "modules/navbar/components/navbar/navbar.component";
+import { ToastComponent } from "@shared/components/toast/toast.component";
 
 @Component({
   selector: 'app-root',
-  imports: [ RouterOutlet, NavbarComponent ],
+  imports: [RouterOutlet, NavbarComponent, ToastComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })

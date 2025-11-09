@@ -1,4 +1,4 @@
-import { HttpStatusCode } from "@angular/common/http";
+import { HttpErrorResponse, HttpStatusCode } from "@angular/common/http";
 
 export interface BasicApiResponse<AttributeInterface> {
   message: string;
@@ -15,4 +15,10 @@ export interface RequestOptions {
   headers?: Record<string, Primitive>;
   withCredentials?: boolean;
   retryCount?: number;
+}
+
+export interface ApiErrorResponse extends BasicApiResponse<null> { }
+
+export interface ApiError extends HttpErrorResponse {
+  error: ApiErrorResponse;
 }
