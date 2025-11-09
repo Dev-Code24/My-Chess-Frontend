@@ -1,5 +1,47 @@
 @import 'tailwindcss';
 
+@theme {
+  --animate-toast-enter: toast-enter 400ms 50ms cubic-bezier(.21, 1.02, .73, 1) both;
+  --animate-toast-exit: toast-exit 300ms ease-out forwards;
+  --animate-toast-push-down: toast-push-down 400ms cubic-bezier(.21, 1.02, .73, 1) forwards;
+}
+
+@keyframes toast-enter {
+  0% {
+    opacity: 0;
+    transform: translateY(-100%);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes toast-exit {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  50% {
+    opacity: 0.5;
+    transform: translateY(-5px);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes toast-push-down {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+
 *,
 *::before,
 *::after {

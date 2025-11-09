@@ -1,9 +1,4 @@
-import { BasicApiResponse, RoomDetails } from "@shared/@interface";
-
-export interface HomeDialog {
-  isVisible: boolean;
-  formType: 'join' | 'create' | null;
-}
+import { BasicApiResponse } from "@shared/@interface";
 
 export interface JoinRoomApiPayload {
   code: string;

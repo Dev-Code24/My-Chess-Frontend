@@ -98,7 +98,9 @@ export class ChessboardComponent implements OnDestroy {
     const board = this.chessBoard();
     const selectedPiece = this.selectedPiece();
     const draggingPiece = this.draggingPiece();
+    console.log('Clicked..', isMyTurn, board);
     if (isMyTurn && board) {
+      console.log('Clicked..');
       const rect = board.nativeElement.getBoundingClientRect();
       const x = event.clientX - rect.left;
       const y = event.clientY - rect.top;

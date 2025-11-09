@@ -1,5 +1,4 @@
 import { Component, computed, inject } from '@angular/core';
-import { HttpErrorResponse } from '@angular/common/http';
 import { Router } from '@angular/router';
 
 import { TabViewComponent, TabViewPanelComponent } from "@shared/components/tabview";
@@ -13,6 +12,8 @@ import { AuthForm, LoginApiResponse, SignupApiResponse } from 'modules/auth/@int
 import { AUTH } from '../../@utils/constants';
 import { COLORS } from '@shared/@utils/constants';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import { ApiError } from '@shared/@interface';
+import { MyChessMessageService } from '@shared/services/message.service';
 
 @Component({
   selector: 'app-auth',
@@ -23,6 +24,7 @@ import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 })
 export class AuthComponent  {
   private readonly router = inject(Router);
+  private readonly messageService = inject(MyChessMessageService);
   private readonly authService = inject(AuthService);
   private readonly connectBackend = inject(AuthConnectBackendService);
 
@@ -54,7 +56,9 @@ export class AuthComponent  {
             this.authService.authenticate(res.data);
             console.log(res.timestamp);
           },
-          error: (err: HttpErrorResponse) => console.error('🥲 Something bad happened', err),
+          error: (error: ApiError) => {
+            this.messageService.showError('🥲 Something bad happened' + error.error.message);
+          },
           complete: () => this.router.navigate(['home'])
         });
         break;
@@ -64,12 +68,14 @@ export class AuthComponent  {
             this.authService.authenticate(res.data);
             console.log(res.timestamp);
           },
-          error: (err: HttpErrorResponse) => console.error('🥲 Something bad happened', err),
+          error: (error: ApiError) => {
+            this.messageService.showError('🥲 Something bad happened' + error.error.message);
+          },
           complete: () => this.router.navigate(['home'])
         });
         break;
       default:
-        console.log('Authentication crashed!');
+        this.messageService.showError('Authentication crashed!');
         break;
     }
   }

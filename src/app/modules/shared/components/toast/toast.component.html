@@ -1,0 +1,36 @@
+@if (toastList().length > 0) {
+  <div
+    class="fixed top-4 left-1/2 -translate-x-1/2 z-[2147483647] pointer-events-none flex flex-col items-center gap-2 w-max max-w-md">
+    @for (toast of toastList(); track toast.id; let index = $index) {
+      <div
+        class="pointer-events-auto cursor-pointer toast-box w-full"
+        [ngClass]="{
+          'animate-toast-enter': toast.visible && index === 0,
+          'animate-toast-exit': !toast.visible,
+          'animate-toast-push-down': toast.visible && index > 0
+        }"
+        [style.z-index]="1000 - index"
+        [style.opacity]="toast.visible && index === 0 ? '0' : '1'"
+        [style.transform]="toast.visible && index === 0 ? 'translateY(-100%)' : 'translateY(0)'"
+        (mouseenter)="pause(toast.id)"
+        (mouseleave)="resume(toast.id)"
+        (click)="dismiss(toast.id)">
+        <div
+          class="flex items-start gap-3 w-full rounded-lg px-4 py-3 shadow-lg border transition-colors"
+          [ngClass]="variantClass(toast.variant)">
+          @if (variantIcon(toast.variant)) {
+            <span class="text-base leading-none mt-0.5 flex-shrink-0">
+              {{ variantIcon(toast.variant) }}
+            </span>
+          }
+
+          <div class="flex-1 min-w-0">
+            <p class="text-sm leading-5 break-words">
+              {{ toast.message }}
+            </p>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+}

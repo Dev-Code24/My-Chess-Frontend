@@ -29,11 +29,7 @@
   </div>
 </div>
 
-<mc-dialog
-  [(isVisible)]="homeDialog().isVisible"
-  [config]="homeDialogConfig"
-  (onDialogClose)="onDialogClose()" >
-  @if (homeDialog().formType === 'join') {
-    <app-join-room (onRoomJoin)="onRoomJoin($event)" [isLoading]="isLoading()" />
-  }
-</mc-dialog>
+<app-join-room
+  (onRoomJoin)="onRoomJoin($event)"
+  [isLoading]="isLoading()"
+  [(isDialogVisible)]="isJoinFormDialogVisible" />

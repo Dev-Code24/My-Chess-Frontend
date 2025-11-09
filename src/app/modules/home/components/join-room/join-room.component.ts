@@ -1,22 +1,49 @@
 import { CommonModule } from '@angular/common';
-import { Component, viewChildren, output, signal, ElementRef, computed, input } from '@angular/core';
+import { Component, viewChildren, output, signal, ElementRef, computed, input, afterRenderEffect, inject, model, effect } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
+import { DialogConfig } from '@shared/@interface';
 import { ButtonComponent } from "@shared/components/button/button";
+import { DialogComponent } from "@shared/components/dialog/dialog.component";
 
 @Component({
   selector: 'app-join-room',
-  imports: [CommonModule, ButtonComponent, FormsModule],
+  imports: [CommonModule, ButtonComponent, FormsModule, DialogComponent],
   templateUrl: './join-room.component.html',
 })
 export class JoinRoomComponent {
-  public isLoading = input.required<boolean>();
+  public readonly isLoading = input.required<boolean>();
+  public readonly isDialogVisible = model.required<boolean>();
   public onRoomJoin = output<string>();
+
   protected inputBoxes = viewChildren<ElementRef<HTMLInputElement>>('inputRef');
   protected inputValues = signal<string[]>(new Array(6).fill(''));
   protected isFormInvalid = computed<boolean>(() => {
     const roomId = this.inputValues().join('');
     return roomId.length !== 6;
   });
+  protected dialogConfig: DialogConfig = {
+    width: '40rem',
+    height: '22rem',
+    top: '50%',
+    left: '50%',
+    closable: true,
+    backdrop: true,
+  };
+
+  private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
+
+  constructor() {
+    effect(() => {
+      if (this.isDialogVisible()) {
+        requestAnimationFrame(() => {
+          const inputs = this.inputBoxes();
+          inputs[0]?.nativeElement.focus();
+        })
+      }
+    });
+  }
 
   protected onInputChange(event: Event, index: number): void {
     const inputEl = event.target as HTMLInputElement;
@@ -52,6 +79,10 @@ export class JoinRoomComponent {
     const inputs = this.inputValues();
     const roomId = inputs.map(input => input).join('');
     this.onRoomJoin.emit(roomId);
+  }
+
+  protected onDialogClose(): void {
+    this.router.navigate([], { relativeTo: this.route });
   }
 
   private updateInputs(value: string, index: number): void {

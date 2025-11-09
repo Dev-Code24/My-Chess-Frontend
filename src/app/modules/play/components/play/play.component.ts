@@ -1,13 +1,14 @@
 import { Component, effect, inject, input, OnInit, signal } from '@angular/core';
 
-import { RoomDetails, UserDetails } from '@shared/@interface';
+import { ApiError, RoomDetails, UserDetails } from '@shared/@interface';
 import { SubSink } from '@shared/@utils/Subsink';
 import { PlayConnectBackendService } from '../../service/play-connect-backend.service';
 import { RoomDetailsApiResponse, Move, PieceColor, LiveRoomInfo } from '../../@interfaces';
 import { StateManagerService } from '@shared/services';
 import { ChessboardComponent } from '../chessboard/chessboard.component';
-import { HttpErrorResponse } from '@angular/common/http';
 import { LoaderDialogComponent } from "@shared/components/loader";
+import { MyChessMessageService } from '@shared/services/message.service';
+import { isMyTurn } from '../../@utils';
 
 @Component({
   selector: 'app-play',
@@ -29,6 +30,7 @@ export class PlayComponent implements OnInit {
 
   private readonly subsink = new SubSink();
   private readonly stateManagerService = inject(StateManagerService);
+  private readonly messageService = inject(MyChessMessageService);
   private readonly connectBackend = inject(PlayConnectBackendService);
 
   constructor() {
@@ -44,16 +46,14 @@ export class PlayComponent implements OnInit {
 
   protected onPieceMoved(move: Move): void {
     this.subsink.sink = this.connectBackend.postPieceMoves(this.roomId(), move).subscribe({
-      next: (data) => {
-        console.log('you played', data);
-      },
-      error: (err: HttpErrorResponse) => console.error(err),
+      error: (error: ApiError) => this.messageService.showError(error.error.message),
     });
   }
 
   private getLiveRoomDetails(): void {
     this.subsink.sink = this.connectBackend.getLiveRoomDetails(this.roomId()).subscribe({
       next: (response: string | RoomDetails | LiveRoomInfo) => {
+        const myColor: PieceColor = this.whoIsBlackPlayer() === 'me' ? 'b' : 'w';
         if (typeof response === 'string') {
           this.roomNotification.set(response);
         } else if ('code' in response) {
@@ -62,18 +62,17 @@ export class PlayComponent implements OnInit {
         } else {
           if (response.move.piece.color === 'b') {
             if (this.whoIsBlackPlayer() === 'opponent') {
-              console.log('opponent moved:', response);
               this.opponentsMove.set(response.move);
             }
           } else {
             if (this.whoIsBlackPlayer() === 'me') {
-              console.log('opponent moved:', response);
               this.opponentsMove.set(response.move);
             }
           }
+          this.stateManagerService.updateIsMyTurn(isMyTurn(response.fen, myColor));
         }
       },
-      error: (error: HttpErrorResponse) => console.error(error)
+      error: (_: Event) => this.messageService.showError('Live connection ended abruptly. Please reload.'),
     });
   }
 
@@ -87,9 +86,13 @@ export class PlayComponent implements OnInit {
           this.chessboardFen.set(data.fen);
           this.capturedPieces.set(data.capturedPieces);
           const whoIsBlackPlayer = this.whoIsBlackPlayer();
+          if (whoIsBlackPlayer) {
+            const myColor: PieceColor = this.whoIsBlackPlayer() === 'me' ? 'b' : 'w';
+            this.stateManagerService.updateIsMyTurn(isMyTurn(data.fen, myColor));
+          }
         }
       },
-      error: (error: HttpErrorResponse) => console.error(error),
+      error: (error: ApiError) => this.messageService.showError(error.error.message),
       complete: () => {
         if (!this.winner()) {
           this.getLiveRoomDetails();
