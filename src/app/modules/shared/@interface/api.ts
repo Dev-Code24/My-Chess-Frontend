@@ -17,6 +17,14 @@ export interface RequestOptions {
   retryCount?: number;
 }
 
+export enum WebSocketState {
+  DISCONNECTED = 'disconnected',
+  CONNECTING = 'connecting',
+  CONNECTED = 'connected',
+  RECONNECTING = 'reconnecting',
+  STALE = 'stale',
+}
+
 export interface ApiErrorResponse extends BasicApiResponse<null> { }
 
 export interface ApiError extends HttpErrorResponse {

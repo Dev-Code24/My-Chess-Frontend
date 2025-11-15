@@ -10,17 +10,23 @@ import { LiveRoomInfo, Move, RoomDetailsApiResponse } from '../@interfaces';
 export class PlayConnectBackendService {
   private readonly commonConnectBackend = inject(CommonConnectBackendService);
 
-  constructor() { }
-
   public getRoomDetails(code: string): Observable<RoomDetailsApiResponse> {
     return this.commonConnectBackend.get<RoomDetailsApiResponse>(`/room/${code}`);
   }
 
-  public getLiveRoomDetails(code: string): Observable<RoomDetails | LiveRoomInfo | string> {
-    return this.commonConnectBackend.getLive<RoomDetails | LiveRoomInfo | string>(`/room/live/${code}`);
+  public initializeConnection(): Observable<void> {
+    return this.commonConnectBackend.wsConnect();
   }
 
-  public postPieceMoves(code: string, pieceMoved: Move): Observable<any> {
-    return this.commonConnectBackend.post<any>(`/room/move/${code}`, pieceMoved);
+  public subscribeToRoom(code: string): Observable<RoomDetails | LiveRoomInfo | string> {
+    return this.commonConnectBackend.wsSubscribe<RoomDetails | LiveRoomInfo | string>(`/topic/room.${code}`);
+  }
+
+  public postPieceMoves(code: string, pieceMoved: Move): void {
+    this.commonConnectBackend.wsSend(`/room/${code}/move`, pieceMoved);
+  }
+
+  public disconnect(): void {
+    this.commonConnectBackend.wsDisconnect();
   }
 }

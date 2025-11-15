@@ -11,7 +11,7 @@ import { LinkButtonComponent } from "@shared/components/button/link-button/link-
 import { HomeConnectBackendService } from 'modules/home/service/home-connect-backend.service';
 import { finalize } from 'rxjs';
 import { ButtonComponent } from "../../../shared/components/button/button/button.component";
-import { MyChessMessageService } from '@shared/services/message.service';
+import { MyChessMessageService } from '@shared/services';
 
 @Component({
   selector: 'app-home',

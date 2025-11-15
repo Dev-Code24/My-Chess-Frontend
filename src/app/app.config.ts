@@ -5,6 +5,7 @@ import { routes } from './app.routes';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { AuthAppInitiazer } from '@core/app-initializers/authenticate';
 import { AuthHttpInterceptor, DateHttpInterceptor } from '@core/http-interceptors';
+import { WebsocketAppInitializer } from '@core/app-initializers/websocket';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -19,6 +20,7 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(
       withInterceptors([ DateHttpInterceptor, AuthHttpInterceptor ]),
     ),
-    provideAppInitializer(AuthAppInitiazer)
+    provideAppInitializer(AuthAppInitiazer),
+    provideAppInitializer(WebsocketAppInitializer),
   ],
 };

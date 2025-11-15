@@ -7,8 +7,9 @@ import { RoomDetailsApiResponse, Move, PieceColor, LiveRoomInfo } from '../../@i
 import { StateManagerService } from '@shared/services';
 import { ChessboardComponent } from '../chessboard/chessboard.component';
 import { LoaderDialogComponent } from "@shared/components/loader";
-import { MyChessMessageService } from '@shared/services/message.service';
+import { MyChessMessageService } from '@shared/services';
 import { isMyTurn } from '../../@utils';
+import { ERRORS } from '@shared/@utils';
 
 @Component({
   selector: 'app-play',
@@ -19,7 +20,6 @@ import { isMyTurn } from '../../@utils';
 export class PlayComponent implements OnInit {
   public readonly roomId = input.required<string>();
 
-  protected roomNotification = signal<string | undefined>(undefined);
   protected opponent = signal<UserDetails | undefined>(undefined);
   protected me = signal<UserDetails | undefined>(undefined);
   protected whoIsBlackPlayer = signal<'me' | 'opponent' | undefined>(undefined);
@@ -36,58 +36,35 @@ export class PlayComponent implements OnInit {
   constructor() {
     effect(() => this.me.set(this.stateManagerService.getUser().details!));
   }
+
   public ngOnInit(): void {
-    this.getRoomDetails();
+    this.loadRoomAndConnectWebSocket();
   }
 
   public ngOnDestroy(): void {
     this.subsink.unsubscribeAll();
+    this.connectBackend.disconnect();
   }
 
   protected onPieceMoved(move: Move): void {
-    this.subsink.sink = this.connectBackend.postPieceMoves(this.roomId(), move).subscribe({
-      error: (error: ApiError) => this.messageService.showError(error.error.message),
-    });
+    this.connectBackend.postPieceMoves(this.roomId(), move);
   }
 
-  private getLiveRoomDetails(): void {
-    this.subsink.sink = this.connectBackend.getLiveRoomDetails(this.roomId()).subscribe({
-      next: (response: string | RoomDetails | LiveRoomInfo) => {
-        const myColor: PieceColor = this.whoIsBlackPlayer() === 'me' ? 'b' : 'w';
-        if (typeof response === 'string') {
-          this.roomNotification.set(response);
-        } else if ('code' in response) {
-          this.assignPlayerRoles(response.blackPlayer, response.whitePlayer);
-          this.assignWinner(response.gameStatus);
-        } else {
-          if (response.move.piece.color === 'b') {
-            if (this.whoIsBlackPlayer() === 'opponent') {
-              this.opponentsMove.set(response.move);
-            }
-          } else {
-            if (this.whoIsBlackPlayer() === 'me') {
-              this.opponentsMove.set(response.move);
-            }
-          }
-          this.stateManagerService.updateIsMyTurn(isMyTurn(response.fen, myColor));
-        }
-      },
-      error: (_: Event) => this.messageService.showError('Live connection ended abruptly. Please reload.'),
-    });
-  }
-
-  private getRoomDetails(): void {
+  private loadRoomAndConnectWebSocket(): void {
     this.subsink.sink = this.connectBackend.getRoomDetails(this.roomId()).subscribe({
       next: (response: RoomDetailsApiResponse) => {
         if (response && response.data) {
-          const { data } = response;
+          const data = response.data;
+
           this.assignPlayerRoles(data.blackPlayer, data.whitePlayer);
           this.assignWinner(data.gameStatus);
+
           this.chessboardFen.set(data.fen);
           this.capturedPieces.set(data.capturedPieces);
-          const whoIsBlackPlayer = this.whoIsBlackPlayer();
-          if (whoIsBlackPlayer) {
-            const myColor: PieceColor = this.whoIsBlackPlayer() === 'me' ? 'b' : 'w';
+
+          const whoIsBlack = this.whoIsBlackPlayer();
+          if (whoIsBlack) {
+            const myColor: PieceColor = whoIsBlack === 'me' ? 'b' : 'w';
             this.stateManagerService.updateIsMyTurn(isMyTurn(data.fen, myColor));
           }
         }
@@ -95,13 +72,56 @@ export class PlayComponent implements OnInit {
       error: (error: ApiError) => this.messageService.showError(error.error.message),
       complete: () => {
         if (!this.winner()) {
-          this.getLiveRoomDetails();
+          this.connectToWebSocket();
         }
       }
     });
   }
 
-  private assignPlayerRoles(blackPlayer: UserDetails | null, whitePlayer: UserDetails | null): void {
+  private connectToWebSocket(): void {
+    this.subsink.sink = this.connectBackend.initializeConnection().subscribe({
+      next: () => this.initWebSocket(),
+      error: () => this.messageService.showError(ERRORS.WEBSOCKET_CONNECTION_FAILED)
+    });
+  }
+
+  private initWebSocket(): void {
+    this.subsink.sink = this.connectBackend.subscribeToRoom(this.roomId()).subscribe({
+      next: (response) => this.listenToRoomUpdates(response),
+      error: () => this.messageService.showError(ERRORS.WEBSOCKET_DISCONNECTED_ABRUPTLY),
+    });
+  }
+
+  private listenToRoomUpdates(response: string | RoomDetails | LiveRoomInfo): void {
+    const myColor: PieceColor = this.whoIsBlackPlayer() === 'me' ? 'b' : 'w';
+
+    if (typeof response === 'string') {
+      this.messageService.showMessage(response);
+      return;
+    }
+
+    if ('code' in response) {
+      this.assignPlayerRoles(response.blackPlayer, response.whitePlayer);
+      this.assignWinner(response.gameStatus);
+      return;
+    }
+
+    const move = response.move;
+    const moveIsBlack = move.piece.color === 'b';
+    const isOpponentMove = (moveIsBlack && this.whoIsBlackPlayer() === 'opponent') ||
+      (!moveIsBlack && this.whoIsBlackPlayer() === 'me');
+
+    if (isOpponentMove) {
+      this.opponentsMove.set(move);
+    }
+
+    this.stateManagerService.updateIsMyTurn(isMyTurn(response.fen, myColor));
+  }
+
+  private assignPlayerRoles(
+    blackPlayer: UserDetails | null,
+    whitePlayer: UserDetails | null
+  ): void {
     if (blackPlayer && blackPlayer.email !== this.me()!.email) {
       this.opponent.set(blackPlayer);
       this.whoIsBlackPlayer.set('opponent');
@@ -113,8 +133,8 @@ export class PlayComponent implements OnInit {
 
   private assignWinner(gameStatus: string): void {
     if (gameStatus.includes('won')) {
-      const winner: PieceColor = gameStatus.includes('white') ? 'w' : 'b';
-      this.winner.set(winner);
+      const winnerColor: PieceColor = gameStatus.includes('white') ? 'w' : 'b';
+      this.winner.set(winnerColor);
     }
   }
 }
