@@ -15,7 +15,6 @@ import { ToastComponent } from "@shared/components/toast/toast.component";
 })
 export class AppComponent implements OnInit, OnDestroy {
   public readonly title = 'my-chess-frontend';
-
   protected user = signal<UserInterface>(DEFAULT_USER_DATA);
 
   private readonly stateManagerService = inject(StateManagerService);

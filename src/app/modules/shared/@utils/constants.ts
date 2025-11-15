@@ -20,3 +20,8 @@ export const COLORS = {
     bg_950: 'bg-lime-950',
   },
 };
+
+export enum ERRORS {
+  WEBSOCKET_CONNECTION_FAILED = 'WebSocket connection failed.',
+  WEBSOCKET_DISCONNECTED_ABRUPTLY = 'WebSocket disconnected abruptly. Please reload.',
+}

@@ -3,12 +3,14 @@ import { inject, Injectable } from '@angular/core';
 import { environment } from '../../../../environments/environment';
 import { RequestOptions } from '@shared/@interface';
 import { catchError, Observable, retry, throwError } from 'rxjs';
+import { WebsocketService } from './websocket.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CommonConnectBackendService {
   private readonly http = inject(HttpClient);
+  private readonly ws = inject(WebsocketService);
   private readonly baseUrl = environment.baseApiUrl;
 
   private readonly defaults: Required<Pick<RequestOptions, 'withCredentials' | 'retryCount'>> = {
@@ -97,28 +99,24 @@ export class CommonConnectBackendService {
     return this.handle(this.http.post<T>(url, formData, opts), retryCount);
   }
 
-  public getLive<T>(path: string): Observable<T> {
-    const url = this.resolveUrl(path);
-    return new Observable((observer) => {
-      const eventSource = new EventSource(url, { withCredentials: true });
-      eventSource.onmessage = (event) => {
-        let data = event.data as T;
-        try {
-          data = JSON.parse(event.data);
-        } catch (error) { }
-        observer.next(data);
-      }
+  public wsConnect(): Observable<void> {
+    return this.ws.connect();
+  }
 
-      eventSource.onerror = (error) => {
-        observer.error(error);
-        eventSource.close();
-        console.warn('Live connection ended, after error', error);
-      }
+  public wsSubscribe<T>(topic: string): Observable<T> {
+    return this.ws.subscribe<T>(topic);
+  }
 
-      return () => {
-        eventSource.close();
-        console.warn('Live connection ended.');
-      };
-    });
+  public wsSend(destination: string, body: unknown): void {
+    destination = '/ws' + destination;
+    this.ws.send(destination, body);
+  }
+
+  public wsDisconnect(): void {
+    this.ws.disconnect();
+  }
+
+  public wsConnectionState() {
+    return this.ws.getWsState();
   }
 }
