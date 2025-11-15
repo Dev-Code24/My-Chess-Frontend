@@ -7,7 +7,7 @@ import { RoomDetailsApiResponse, Move, PieceColor, LiveRoomInfo } from '../../@i
 import { StateManagerService } from '@shared/services';
 import { ChessboardComponent } from '../chessboard/chessboard.component';
 import { LoaderDialogComponent } from "@shared/components/loader";
-import { MyChessMessageService } from '@shared/services/message.service';
+import { MyChessMessageService } from '@shared/services';
 import { isMyTurn } from '../../@utils';
 import { ERRORS } from '@shared/@utils';
 
@@ -20,7 +20,6 @@ import { ERRORS } from '@shared/@utils';
 export class PlayComponent implements OnInit {
   public readonly roomId = input.required<string>();
 
-  protected roomNotification = signal<string | undefined>(undefined);
   protected opponent = signal<UserDetails | undefined>(undefined);
   protected me = signal<UserDetails | undefined>(undefined);
   protected whoIsBlackPlayer = signal<'me' | 'opponent' | undefined>(undefined);
@@ -98,7 +97,6 @@ export class PlayComponent implements OnInit {
 
     if (typeof response === 'string') {
       this.messageService.showMessage(response);
-      this.roomNotification.set(response);
       return;
     }
 

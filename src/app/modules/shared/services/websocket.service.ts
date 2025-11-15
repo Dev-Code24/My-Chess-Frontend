@@ -1,13 +1,9 @@
 import { inject, Injectable } from '@angular/core';
-import {
-  Client,
-  IMessage,
-  messageCallbackType,
-} from '@stomp/stompjs';
+import { Client, IMessage, messageCallbackType } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 import { environment } from '../../../../environments/environment';
 import { Observable } from 'rxjs';
-import { WebsocketConnectionStateService } from './websocket-connection-state.service';
+import { StateManagerService } from '@shared/services';
 
 @Injectable({
   providedIn: 'root',
@@ -19,47 +15,16 @@ export class WebsocketService {
   private messageQueue: { destination: string; body: unknown }[] = [];
   private reconnectAttempts = 0;
   private lastHeartbeat = Date.now();
-  private stateService = inject(WebsocketConnectionStateService);
-
-  public getWsState(): string {
-    return this.stateService.state();
-  }
+  private readonly stateManagerService = inject(StateManagerService);
 
   public connect(): Observable<void> {
-    const url = `${environment.baseApiUrl}/live`;
-
-    return new Observable((observer) => {
-      this.stateService.setConnecting();
-
-      this.client = new Client({
-        webSocketFactory: () => new SockJS(url),
-        reconnectDelay: 0,
-        heartbeatIncoming: 10_000,
-        heartbeatOutgoing: 10_000,
-        debug: () => {},
-        onConnect: (frame) => {
-          this.isConnected = true;
-          this.reconnectAttempts = 0;
-          this.stateService.setConnected();
-          this.flushMessageQueue();
-          this.restoreSubscriptions();
-          this.lastHeartbeat = Date.now();
-          console.log('[WEBSOCKET] CONNECTED');
-          observer.next();
-          observer.complete();
-        },
-        onDisconnect: (frame) => {
-          console.log('[WEBSOCKET] DISCONNECTED');
-          this.isConnected = false;
-        },
-        onWebSocketClose: () => this.handleDisconnect(),
-        onStompError: () => this.handleDisconnect(),
-      });
-
+    return new Observable(() => {
+      this.stateManagerService.setWsConnecting();
+      this.createClient();
       this.client.activate();
 
       return () => {
-        this.stateService.setDisconnected();
+        this.stateManagerService.setWsDisconnected();
       };
     });
   }
@@ -74,8 +39,10 @@ export class WebsocketService {
           data = msg.body;
         }
         observer.next(data);
-      }
+      };
+
       this.subscriptions.set(destination, callback);
+
       if (this.isConnected) {
         this.client.subscribe(destination, callback);
       }
@@ -99,30 +66,74 @@ export class WebsocketService {
   }
 
   public disconnect(): void {
-    this.client.deactivate();
+    if (this.client && this.isConnected) {
+      this.client.deactivate();
+    }
     this.isConnected = false;
-    this.stateService.setDisconnected();
+    this.stateManagerService.setWsDisconnected();
   }
 
   public checkHeartbeat() {
     const now = Date.now();
     if (now - this.lastHeartbeat > 20000 && this.isConnected) {
-      this.stateService.setStale();
+      this.stateManagerService.setWsStale();
     }
   }
 
-  private handleDisconnect() {
-    if (!this.isConnected) {
+  private createClient() {
+    const url = `${environment.baseApiUrl}/live`;
+
+    this.client = new Client({
+      webSocketFactory: () => new SockJS(url),
+      reconnectDelay: 0,
+      heartbeatIncoming: 10000,
+      heartbeatOutgoing: 10000,
+      debug: () => {},
+      onConnect: () => {
+        this.isConnected = true;
+        this.stateManagerService.setWsConnected();
+
+        if (this.reconnectAttempts > 0) {
+          this.stateManagerService.updateWsState('Connection restored');
+        }
+
+        this.reconnectAttempts = 0;
+        this.flushMessageQueue();
+        this.restoreSubscriptions();
+        this.lastHeartbeat = Date.now();
+      },
+      onDisconnect: () => {
+        this.isConnected = false;
+        this.stateManagerService.setWsDisconnected();
+        this.stateManagerService.updateWsState('Disconnected from server');
+      },
+      onWebSocketClose: () => {
+        this.handleServerCrash();
+      },
+      onStompError: () => {
+        this.handleServerCrash();
+      }
+    });
+  }
+
+  private handleServerCrash() {
+    if (this.reconnectAttempts > 15) {
+      this.stateManagerService.setWsDisconnected();
+      this.stateManagerService.updateWsState('Reconnection failed');
       return;
     }
 
     this.isConnected = false;
-    this.stateService.setReconnecting();
+    this.stateManagerService.setWsDisconnected();
+    this.stateManagerService.updateWsState('Trying to reconnect');
 
-    const delay = Math.min(1000 * Math.pow(2, this.reconnectAttempts), 15000);
-    this.reconnectAttempts++;
+    const delay = Math.min(1500, 15000);
 
-    setTimeout(() => this.client.activate(), delay);
+    setTimeout(() => {
+      this.reconnectAttempts++;
+      this.createClient();
+      this.client.activate();
+    }, delay);
   }
 
   private restoreSubscriptions() {

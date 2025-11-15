@@ -13,7 +13,7 @@ import { AUTH } from '../../@utils/constants';
 import { COLORS } from '@shared/@utils/constants';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { ApiError } from '@shared/@interface';
-import { MyChessMessageService } from '@shared/services/message.service';
+import { MyChessMessageService } from '@shared/services';
 
 @Component({
   selector: 'app-auth',
@@ -54,7 +54,6 @@ export class AuthComponent  {
         this.connectBackend.login(payload).subscribe({
           next: (res: LoginApiResponse) => {
             this.authService.authenticate(res.data);
-            console.log(res.timestamp);
           },
           error: (error: ApiError) => {
             this.messageService.showError('🥲 Something bad happened' + error.error.message);
@@ -66,7 +65,6 @@ export class AuthComponent  {
         this.connectBackend.signup(payload).subscribe({
           next: (res: SignupApiResponse) => {
             this.authService.authenticate(res.data);
-            console.log(res.timestamp);
           },
           error: (error: ApiError) => {
             this.messageService.showError('🥲 Something bad happened' + error.error.message);

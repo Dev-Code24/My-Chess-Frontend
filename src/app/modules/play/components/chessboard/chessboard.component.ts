@@ -404,12 +404,6 @@ export class ChessboardComponent implements OnDestroy {
         piece,
         to: { row: targetRow, col: targetCol },
       });
-
-      console.log('my turn', {
-        piece,
-        to: { row: targetRow, col: targetCol },
-        moveDetails
-      });
     }
   }
 

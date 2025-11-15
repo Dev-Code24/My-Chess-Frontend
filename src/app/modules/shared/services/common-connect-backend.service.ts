@@ -4,13 +4,15 @@ import { environment } from '../../../../environments/environment';
 import { RequestOptions } from '@shared/@interface';
 import { catchError, Observable, retry, throwError } from 'rxjs';
 import { WebsocketService } from './websocket.service';
+import { StateManagerService } from './state-manager.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CommonConnectBackendService {
   private readonly http = inject(HttpClient);
-  private readonly ws = inject(WebsocketService);
+  private readonly wsService = inject(WebsocketService);
+  private readonly stateManagerService = inject(StateManagerService);
   private readonly baseUrl = environment.baseApiUrl;
 
   private readonly defaults: Required<Pick<RequestOptions, 'withCredentials' | 'retryCount'>> = {
@@ -100,23 +102,22 @@ export class CommonConnectBackendService {
   }
 
   public wsConnect(): Observable<void> {
-    return this.ws.connect();
+    return this.wsService.connect();
   }
 
   public wsSubscribe<T>(topic: string): Observable<T> {
-    return this.ws.subscribe<T>(topic);
+    return this.wsService.subscribe<T>(topic);
   }
 
   public wsSend(destination: string, body: unknown): void {
-    destination = '/ws' + destination;
-    this.ws.send(destination, body);
+    this.wsService.send('/wsService' + destination, body);
   }
 
   public wsDisconnect(): void {
-    this.ws.disconnect();
+    this.wsService.disconnect();
   }
 
   public wsConnectionState() {
-    return this.ws.getWsState();
+    return this.stateManagerService.getWsConnectionState();
   }
 }
