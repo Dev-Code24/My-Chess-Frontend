@@ -127,7 +127,7 @@ export class WebsocketService {
     this.stateManagerService.setWsDisconnected();
     this.stateManagerService.updateWsState('Trying to reconnect');
 
-    const delay = Math.min(1500, 15000);
+    const delay = 2000;
 
     setTimeout(() => {
       this.reconnectAttempts++;
