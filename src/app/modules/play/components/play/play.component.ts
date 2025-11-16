@@ -42,8 +42,8 @@ export class PlayComponent implements OnInit {
   }
 
   public ngOnDestroy(): void {
+    this.connectBackend.leaveRoom(this.roomId());
     this.subsink.unsubscribeAll();
-    this.connectBackend.disconnect();
   }
 
   protected onPieceMoved(move: Move): void {
@@ -90,13 +90,27 @@ export class PlayComponent implements OnInit {
       next: (response) => this.listenToRoomUpdates(response),
       error: () => this.messageService.showError(ERRORS.WEBSOCKET_DISCONNECTED_ABRUPTLY),
     });
+    this.connectBackend.joinRoom(this.roomId());
   }
 
   private listenToRoomUpdates(response: string | RoomDetails | LiveRoomInfo): void {
     const myColor: PieceColor = this.whoIsBlackPlayer() === 'me' ? 'b' : 'w';
-
     if (typeof response === 'string') {
       this.messageService.showMessage(response);
+      const opponentDisconnectedMessage = `Player ${this.opponent()!.username} left the room`;
+      if (response.includes(opponentDisconnectedMessage)) {
+        const opponent = this.opponent();
+        if (opponent) {
+          opponent.inGame = false;
+          this.opponent.set(opponent);
+        }
+      } else if (response.includes('resumed')) {
+        const opponent = this.opponent();
+        if (opponent) {
+          opponent.inGame = true;
+          this.opponent.set(opponent);
+        }
+      }
       return;
     }
 

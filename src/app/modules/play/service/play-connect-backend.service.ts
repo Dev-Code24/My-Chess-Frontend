@@ -19,11 +19,19 @@ export class PlayConnectBackendService {
   }
 
   public subscribeToRoom(code: string): Observable<RoomDetails | LiveRoomInfo | string> {
-    return this.commonConnectBackend.wsSubscribe<RoomDetails | LiveRoomInfo | string>(`/topic/room.${code}`);
+    return this.commonConnectBackend.wsSubscribe<RoomDetails | LiveRoomInfo | string>(`/room.${code}`);
   }
 
   public postPieceMoves(code: string, pieceMoved: Move): void {
     this.commonConnectBackend.wsSend(`/room/${code}/move`, pieceMoved);
+  }
+
+  public joinRoom(code: string): void {
+    this.commonConnectBackend.wsSend(`/room/${code}/join`, {});
+  }
+
+  public leaveRoom(code: string): void {
+    this.commonConnectBackend.wsSend(`/room/${code}/leave`, {});
   }
 
   public disconnect(): void {
