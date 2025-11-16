@@ -26,6 +26,14 @@ export class PlayConnectBackendService {
     this.commonConnectBackend.wsSend(`/room/${code}/move`, pieceMoved);
   }
 
+  public joinRoom(code: string): void {
+    this.commonConnectBackend.wsSend(`/room/${code}/join`, {});
+  }
+
+  public leaveRoom(code: string): void {
+    this.commonConnectBackend.wsSend(`/room/${code}/leave`, {});
+  }
+
   public disconnect(): void {
     this.commonConnectBackend.wsDisconnect();
   }

@@ -1,5 +1,5 @@
 <!-- TODO: Work on showing the waiting for opponent modal -->
-@if (opponent() && me() && whoIsBlackPlayer() && capturedPieces()) {
+@if (opponent() && opponent()?.inGame && me() && whoIsBlackPlayer() && capturedPieces()) {
   <div class="h-full">
     <app-chessboard
       [me]="me()!"
