@@ -67,10 +67,10 @@ export class WebsocketService {
 
   public disconnect(): void {
     if (this.client && this.isConnected) {
+      this.isConnected = false;
+      this.stateManagerService.setWsDisconnected();
       this.client.deactivate();
     }
-    this.isConnected = false;
-    this.stateManagerService.setWsDisconnected();
   }
 
   public checkHeartbeat() {
@@ -88,7 +88,7 @@ export class WebsocketService {
       reconnectDelay: 0,
       heartbeatIncoming: 10000,
       heartbeatOutgoing: 10000,
-      debug: () => {},
+      debug: (mssg) => { console.log(mssg); },
       onConnect: () => {
         this.isConnected = true;
         this.stateManagerService.setWsConnected();
@@ -127,7 +127,7 @@ export class WebsocketService {
     this.stateManagerService.setWsDisconnected();
     this.stateManagerService.updateWsState('Trying to reconnect');
 
-    const delay = 2000;
+    const delay = Math.min(1000 * Math.pow(2, this.reconnectAttempts), 15000);
 
     setTimeout(() => {
       this.reconnectAttempts++;

@@ -19,7 +19,7 @@ export class PlayConnectBackendService {
   }
 
   public subscribeToRoom(code: string): Observable<RoomDetails | LiveRoomInfo | string> {
-    return this.commonConnectBackend.wsSubscribe<RoomDetails | LiveRoomInfo | string>(`/topic/room.${code}`);
+    return this.commonConnectBackend.wsSubscribe<RoomDetails | LiveRoomInfo | string>(`/room.${code}`);
   }
 
   public postPieceMoves(code: string, pieceMoved: Move): void {

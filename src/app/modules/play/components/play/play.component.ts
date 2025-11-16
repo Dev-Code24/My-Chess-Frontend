@@ -94,7 +94,6 @@ export class PlayComponent implements OnInit {
 
   private listenToRoomUpdates(response: string | RoomDetails | LiveRoomInfo): void {
     const myColor: PieceColor = this.whoIsBlackPlayer() === 'me' ? 'b' : 'w';
-
     if (typeof response === 'string') {
       this.messageService.showMessage(response);
       return;

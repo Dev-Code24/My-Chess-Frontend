@@ -105,12 +105,12 @@ export class CommonConnectBackendService {
     return this.wsService.connect();
   }
 
-  public wsSubscribe<T>(topic: string): Observable<T> {
-    return this.wsService.subscribe<T>(topic);
+  public wsSubscribe<T>(destination: string): Observable<T> {
+    return this.wsService.subscribe<T>('/topic' + destination);
   }
 
   public wsSend(destination: string, body: unknown): void {
-    this.wsService.send('/wsService' + destination, body);
+    this.wsService.send('/ws' + destination, body);
   }
 
   public wsDisconnect(): void {
