@@ -30,21 +30,11 @@ A real-time multiplayer chess platform built with Angular 19, featuring WebSocke
 
 ### Design Patterns
 
-**1. Reactive State Management**
-```typescript
-StateManagerService
-├── user$: Observable<UserInterface>      // Global user state
-└── myTurn$: Observable<boolean>          // Turn management
-```
-
-**2. Service Layer**
-- `CommonConnectBackendService`: HTTP wrapper with retry logic
-- `PlayConnectBackendService`: Game-specific API calls
-- `MessageService`: Toast notification management
-
-**3. Route Guards**
-- `authGuard`: Protects authenticated routes
-- `loginGuard`: Prevents duplicate login
+- **[Observer Pattern](https://refactoring.guru/design-patterns/observer)**: RxJS Observables and BehaviorSubjects for reactive state management (`StateManagerService` with `user$` and `myTurn$` observables)
+- **[Strategy Pattern](https://refactoring.guru/design-patterns/strategy)**: Move validation algorithms for different chess pieces (pawn, rook, knight, bishop, queen, king)
+- **[Facade Pattern](https://refactoring.guru/design-patterns/facade)**: `CommonConnectBackendService` provides simplified HTTP interface with retry logic and error handling
+- **[Guard Pattern](https://en.wikipedia.org/wiki/Guard_(computer_science))**: Route guards (`authGuard`, `loginGuard`) protect routes based on authentication state
+- **Singleton Pattern**: Core services injected at root level for application-wide state
 
 ### System Design Highlights
 
@@ -59,6 +49,7 @@ Board state updated via FEN notation
 
 **2. State Synchronization**
 - WebSocket ensures both players see identical board state
+- Reconnection logic with exponential backoff (1s → 2s → 4s → 8s)
 - Toast notifications for connection status
 
 **3. Chess Logic Architecture**
@@ -77,31 +68,6 @@ ChessboardComponent
 - Subscription cleanup with SubSink utility
 - Lazy loading of routes
 - AOT compilation in production
-
-### Project Structure
-
-```
-src/app/
-├── @core/                          # Singleton services & interceptors
-│   ├── app-initializers/           # Load user on startup
-│   └── http-interceptors/          # Auth & date interceptors
-├── modules/
-│   ├── auth/                       # Authentication (login/signup)
-│   ├── home/                       # Lobby (create/join rooms)
-│   ├── play/                       # Chess game
-│   │   ├── @utils/
-│   │   │   ├── fen-utils.ts        # FEN notation parser
-│   │   │   └── move-utils.ts       # Move validation engine
-│   │   └── components/
-│   │       ├── chessboard/         # 8x8 board with drag-drop
-│   │       ├── play/               # Game container + WebSocket
-│   │       ├── promotion-dialog/   # Pawn promotion UI
-│   │       └── game-over-dialog/   # Result display
-│   └── shared/                     # Reusable components & services
-│       ├── guards/                 # Route protection
-│       └── services/               # State, HTTP, messages
-└── environments/                   # Environment configs
-```
 
 ## 🚀 Quick Start
 
@@ -163,44 +129,6 @@ ng serve
 **Captured Pieces**:
 - Format: `b{pieces}/w{pieces}` (e.g., `bPNB/wRQ`)
 - Real-time UI display by color
-
-## 🏗️ Build & Deploy
-
-### Production Build
-```bash
-ng build --configuration production
-# Output: dist/my-chess-frontend/browser/
-```
-
-### Deployment Options
-
-**1. Static Hosting** (Netlify/Vercel)
-```bash
-ng build --production
-# Deploy dist/my-chess-frontend/browser/
-```
-
-**2. Docker**
-```dockerfile
-FROM node:18 AS build
-WORKDIR /app
-COPY package*.json ./
-RUN npm ci
-COPY . .
-RUN npm run build -- --configuration production
-
-FROM nginx:alpine
-COPY --from=build /app/dist/my-chess-frontend/browser /usr/share/nginx/html
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
-```
-
-## 🧪 Testing
-
-```bash
-ng test                    # Run unit tests
-ng test --code-coverage    # With coverage report
-```
 
 ## 📚 Key Files
 
