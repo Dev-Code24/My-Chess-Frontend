@@ -7,6 +7,8 @@ A real-time multiplayer chess platform built with Angular 19, featuring WebSocke
 ![TailwindCSS](https://img.shields.io/badge/TailwindCSS-4.1.11-38B2AC?logo=tailwind-css)
 ![RxJS](https://img.shields.io/badge/RxJS-7.8.0-B7178C?logo=reactivex)
 
+<img width="1680" height="1050" alt="Screenshot 2025-11-18 at 6 30 27 PM" src="https://github.com/user-attachments/assets/b7d2ea60-4811-497f-9e40-0ded6a077dcb" />
+
 ## ✨ Key Features
 
 - **Real-time Multiplayer**: WebSocket-based bidirectional communication with automatic reconnection and message queuing
