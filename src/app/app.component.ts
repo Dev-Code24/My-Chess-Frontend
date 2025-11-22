@@ -7,7 +7,7 @@ import { StateManagerService } from '@shared/services/state-manager.service';
 import { NavbarComponent } from "modules/navbar/components/navbar/navbar.component";
 import { ToastComponent } from "@shared/components/toast/toast.component";
 import { MyChessMessageService, WebsocketService } from '@shared/services';
-import { filter, interval, take, tap } from 'rxjs';
+import {  interval, tap } from 'rxjs';
 
 @Component({
   selector: 'app-root',
