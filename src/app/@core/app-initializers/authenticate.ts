@@ -6,14 +6,14 @@ import { LoginApiResponse } from "modules/auth/@interface";
 import { CommonConnectBackendService } from "@shared/services";
 
 export function AuthAppInitiazer () {
-  const auth = inject(AuthService);
-  const commonConnectBackend = inject(CommonConnectBackendService);
+  const authService = inject(AuthService);
+  const commonConnectBackendService = inject(CommonConnectBackendService);
 
-  return commonConnectBackend.get<LoginApiResponse>('user/me')
+  return commonConnectBackendService.get<LoginApiResponse>('user/me')
     .pipe(
-      tap((value) => { auth.authenticate(value.data); }),
+      tap((value) => { authService.authenticate(value.data); }),
       catchError(() => {
-        auth.logOut();
+        authService.logOut();
         return of(null);
       })
     );

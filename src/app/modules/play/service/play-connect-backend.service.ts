@@ -14,10 +14,6 @@ export class PlayConnectBackendService {
     return this.commonConnectBackend.get<RoomDetailsApiResponse>(`/room/${code}`);
   }
 
-  public initializeConnection(): Observable<void> {
-    return this.commonConnectBackend.wsConnect();
-  }
-
   public subscribeToRoom(code: string): Observable<RoomDetails | LiveRoomInfo | string> {
     return this.commonConnectBackend.wsSubscribe<RoomDetails | LiveRoomInfo | string>(`/room.${code}`);
   }

@@ -58,11 +58,11 @@ export class PlayComponent implements OnInit {
 
           this.assignPlayerRoles(data.blackPlayer, data.whitePlayer);
           this.assignWinner(data.gameStatus);
-
           this.chessboardFen.set(data.fen);
           this.capturedPieces.set(data.capturedPieces);
 
           const whoIsBlack = this.whoIsBlackPlayer();
+
           if (whoIsBlack) {
             const myColor: PieceColor = whoIsBlack === 'me' ? 'b' : 'w';
             this.stateManagerService.updateIsMyTurn(isMyTurn(data.fen, myColor));
@@ -72,16 +72,9 @@ export class PlayComponent implements OnInit {
       error: (error: ApiError) => this.messageService.showError(error.error.message),
       complete: () => {
         if (!this.winner()) {
-          this.connectToWebSocket();
+          this.initWebSocket();
         }
       }
-    });
-  }
-
-  private connectToWebSocket(): void {
-    this.subsink.sink = this.connectBackend.initializeConnection().subscribe({
-      next: () => this.initWebSocket(),
-      error: () => this.messageService.showError(ERRORS.WEBSOCKET_CONNECTION_FAILED)
     });
   }
 
@@ -119,6 +112,8 @@ export class PlayComponent implements OnInit {
       this.assignWinner(response.gameStatus);
       return;
     }
+
+    console.log(response);
 
     const move = response.move;
     const moveIsBlack = move.piece.color === 'b';

@@ -2,7 +2,7 @@ import { inject, Injectable } from '@angular/core';
 import { Client, IMessage, messageCallbackType } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 import { environment } from '../../../../environments/environment';
-import { Observable } from 'rxjs';
+import { Observable, Subscriber } from 'rxjs';
 import { StateManagerService } from '@shared/services';
 
 @Injectable({
@@ -11,11 +11,11 @@ import { StateManagerService } from '@shared/services';
 export class WebsocketService {
   private client!: Client;
   private isConnected = false;
-  private subscriptions = new Map<string, messageCallbackType>();
-  private messageQueue: { destination: string; body: unknown }[] = [];
   private reconnectAttempts = 0;
-  private hasConnectedBefore = false;
   private lastHeartbeat = Date.now();
+  private hasConnectedBefore = false;
+  private messageQueue: { destination: string; body: unknown }[] = [];
+  private subscriptions = new Map<string, messageCallbackType>();
   private readonly stateManagerService = inject(StateManagerService);
 
   public connect(): Observable<void> {
@@ -23,13 +23,6 @@ export class WebsocketService {
       this.stateManagerService.setWsConnecting();
       this.createClient(observer);
       this.client.activate();
-
-      return () => {
-        this.stateManagerService.setWsDisconnected();
-        if (this.client && this.isConnected) {
-          this.client.deactivate();
-        }
-      };
     });
   }
 
@@ -84,7 +77,7 @@ export class WebsocketService {
     }
   }
 
-  private createClient(observer?: any) {
+  private createClient(observer?: Subscriber<void>) {
     const url = `${environment.baseApiUrl}/live`;
 
     this.client = new Client({
@@ -92,13 +85,13 @@ export class WebsocketService {
       reconnectDelay: 0,
       heartbeatIncoming: 10000,
       heartbeatOutgoing: 10000,
-      debug: (mssg) => { console.log(mssg); },
+      debug: () => { },
       onConnect: () => {
         this.isConnected = true;
         this.stateManagerService.setWsConnected();
-
         if (this.reconnectAttempts > 0 && this.hasConnectedBefore) {
-          this.stateManagerService.updateWsState('Connection restored');
+          console.log('Trying to connect');
+          this.stateManagerService.updateWsStateNotification('Connection restored ' + this.reconnectAttempts);
         }
 
         this.hasConnectedBefore = true;
@@ -107,7 +100,6 @@ export class WebsocketService {
         this.restoreSubscriptions();
         this.lastHeartbeat = Date.now();
 
-        // Notify observer that connection is established
         if (observer) {
           observer.next();
           observer.complete();
@@ -116,17 +108,17 @@ export class WebsocketService {
       onDisconnect: () => {
         this.isConnected = false;
         this.stateManagerService.setWsDisconnected();
-        // Only show notification if we had a successful connection before and are now reconnecting
         if (this.hasConnectedBefore && this.reconnectAttempts > 0) {
-          this.stateManagerService.updateWsState('Disconnected from server');
+          this.stateManagerService.updateWsStateNotification('Disconnected from server');
         }
       },
       onWebSocketClose: () => {
         this.handleServerCrash();
+        console.log('Websocket closed');
       },
       onStompError: (error) => {
         this.handleServerCrash();
-        // Notify observer of error
+        console.log('Stomp Error');
         if (observer) {
           observer.error(error);
         }
@@ -135,25 +127,24 @@ export class WebsocketService {
   }
 
   private handleServerCrash() {
+    this.isConnected = false;
+
     if (this.reconnectAttempts > 15) {
       this.stateManagerService.setWsDisconnected();
-      this.stateManagerService.updateWsState('Reconnection failed');
+      this.stateManagerService.updateWsStateNotification('Reconnection failed');
       return;
     }
 
-    this.isConnected = false;
     this.stateManagerService.setWsDisconnected();
-
-    // Only show reconnection message if we're already in a reconnection attempt (not the first disconnect)
     if (this.hasConnectedBefore && this.reconnectAttempts > 0) {
-      this.stateManagerService.updateWsState('Trying to reconnect');
+      this.stateManagerService.setWsReconnecting();
+      this.stateManagerService.updateWsStateNotification('Trying to reconnect');
     }
 
     const delay = Math.min(1000 * Math.pow(2, this.reconnectAttempts), 15000);
 
     setTimeout(() => {
       this.reconnectAttempts++;
-      this.createClient(); // No observer during reconnection
       this.client.activate();
     }, delay);
   }

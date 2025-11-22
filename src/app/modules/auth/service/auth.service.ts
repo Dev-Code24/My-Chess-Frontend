@@ -15,7 +15,6 @@ export class AuthService {
       isLoggedIn: true,
       details: user,
     })
-
     return true;
   }
   public logOut(): boolean {
