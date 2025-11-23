@@ -21,7 +21,15 @@ export const COLORS = {
   },
 };
 
-export enum ERRORS {
-  WEBSOCKET_CONNECTION_FAILED = 'WebSocket connection failed.',
-  WEBSOCKET_DISCONNECTED_ABRUPTLY = 'WebSocket disconnected abruptly. Please reload.',
+export enum ERROR_MESSAGES {
+  WEBSOCKET_CONNECTION_FAILED = 'Failed to connect to the server.',
+  WEBSOCKET_DISCONNECTED_ABRUPTLY = 'Disconnected from the server. Please reload.',
+  WEBSOCKET_RECONNECTION_FAILED = 'Reconnection failed.',
+  DISCONNECTED_FROM_SERVER = 'Disconnected from the server.',
+}
+
+export enum MESSAGES {
+  WEBSOCKET_CONNECTION_RESTORED = 'Connection restored.',
+  WEBSOCKET_RETRYING = 'Trying to reconnect',
+  WEBSOCKET_CONNECTED = 'Connected to the server.',
 }

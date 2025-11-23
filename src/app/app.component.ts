@@ -1,13 +1,13 @@
 import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { UserInterface, WebSocketState } from '@shared/@interface';
-import {DEFAULT_USER_DATA, ERRORS} from '@shared/@utils/constants';
+import {DEFAULT_USER_DATA, ERROR_MESSAGES, MESSAGES} from '@shared/@utils/constants';
 import { SubSink } from '@shared/@utils/Subsink';
 import { StateManagerService } from '@shared/services/state-manager.service';
 import { NavbarComponent } from "modules/navbar/components/navbar/navbar.component";
 import { ToastComponent } from "@shared/components/toast/toast.component";
 import { MyChessMessageService, WebsocketService } from '@shared/services';
-import {  interval, tap } from 'rxjs';
+import { interval, tap } from 'rxjs';
 
 @Component({
   selector: 'app-root',
@@ -33,8 +33,8 @@ export class AppComponent implements OnInit, OnDestroy {
         next: (user) => {
           if (user.isLoggedIn) {
             this.subsink.sink = this.wsService.connect().subscribe({
-              next: () => this.messageService.showSuccess("Connected to Websocket"),
-              error: () => this.messageService.showError(ERRORS.WEBSOCKET_CONNECTION_FAILED),
+              next: () => this.messageService.showSuccess(MESSAGES.WEBSOCKET_CONNECTED),
+              error: () => this.messageService.showError(ERROR_MESSAGES.WEBSOCKET_CONNECTION_FAILED),
             });
 
             this.subsink.sink = interval(10_000).subscribe(() => this.wsService.checkHeartbeat());

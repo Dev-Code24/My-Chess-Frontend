@@ -9,7 +9,7 @@ import { ChessboardComponent } from '../chessboard/chessboard.component';
 import { LoaderDialogComponent } from "@shared/components/loader";
 import { MyChessMessageService } from '@shared/services';
 import { isMyTurn } from '../../@utils';
-import { ERRORS } from '@shared/@utils';
+import { ERROR_MESSAGES } from '@shared/@utils';
 
 @Component({
   selector: 'app-play',
@@ -81,7 +81,7 @@ export class PlayComponent implements OnInit, OnDestroy {
   private initWebSocket(): void {
     this.subsink.sink = this.connectBackend.subscribeToRoom(this.roomId()).subscribe({
       next: (response) => this.listenToRoomUpdates(response),
-      error: () => this.messageService.showError(ERRORS.WEBSOCKET_DISCONNECTED_ABRUPTLY),
+      error: () => this.messageService.showError(ERROR_MESSAGES.WEBSOCKET_DISCONNECTED_ABRUPTLY),
     });
     this.connectBackend.joinRoom(this.roomId());
   }

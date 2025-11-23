@@ -4,6 +4,7 @@ import SockJS from 'sockjs-client';
 import { environment } from '../../../../environments/environment';
 import { Observable, Subscriber } from 'rxjs';
 import { StateManagerService } from '@shared/services';
+import { ERROR_MESSAGES, MESSAGES } from '@shared/@utils';
 
 @Injectable({
   providedIn: 'root',
@@ -23,6 +24,12 @@ export class WebsocketService {
       this.stateManagerService.setWsConnecting();
       this.createClient(observer);
       this.client.activate();
+
+      return () => {
+        if (this.isConnected && this.client) {
+          this.client.deactivate();
+        }
+      }
     });
   }
 
@@ -90,8 +97,7 @@ export class WebsocketService {
         this.isConnected = true;
         this.stateManagerService.setWsConnected();
         if (this.reconnectAttempts > 0 && this.hasConnectedBefore) {
-          console.log('Trying to connect');
-          this.stateManagerService.updateWsStateNotification('Connection restored ' + this.reconnectAttempts);
+          this.stateManagerService.updateWsStateNotification(MESSAGES.WEBSOCKET_CONNECTION_RESTORED);
         }
 
         this.hasConnectedBefore = true;
@@ -102,23 +108,22 @@ export class WebsocketService {
 
         if (observer) {
           observer.next();
-          observer.complete();
         }
       },
       onDisconnect: () => {
         this.isConnected = false;
         this.stateManagerService.setWsDisconnected();
         if (this.hasConnectedBefore && this.reconnectAttempts > 0) {
-          this.stateManagerService.updateWsStateNotification('Disconnected from server');
+          this.stateManagerService.updateWsStateNotification(ERROR_MESSAGES.DISCONNECTED_FROM_SERVER);
         }
       },
       onWebSocketClose: () => {
+        this.stateManagerService.setWsDisconnected();
         this.handleServerCrash();
-        console.log('Websocket closed');
       },
       onStompError: (error) => {
+        this.stateManagerService.setWsDisconnected();
         this.handleServerCrash();
-        console.log('Stomp Error');
         if (observer) {
           observer.error(error);
         }
@@ -129,23 +134,26 @@ export class WebsocketService {
   private handleServerCrash() {
     this.isConnected = false;
 
-    if (this.reconnectAttempts > 15) {
+    if (this.reconnectAttempts > 20) {
       this.stateManagerService.setWsDisconnected();
-      this.stateManagerService.updateWsStateNotification('Reconnection failed');
+      this.stateManagerService.updateWsStateNotification(ERROR_MESSAGES.WEBSOCKET_RECONNECTION_FAILED);
       return;
     }
 
-    this.stateManagerService.setWsDisconnected();
     if (this.hasConnectedBefore && this.reconnectAttempts > 0) {
       this.stateManagerService.setWsReconnecting();
-      this.stateManagerService.updateWsStateNotification('Trying to reconnect');
+      this.stateManagerService.updateWsStateNotification(MESSAGES.WEBSOCKET_RETRYING);
     }
 
     const delay = Math.min(1000 * Math.pow(2, this.reconnectAttempts), 15000);
 
-    setTimeout(() => {
+    const timeoutId = setTimeout(() => {
       this.reconnectAttempts++;
+      this.createClient();
       this.client.activate();
+      if (this.client.connected) {
+        clearTimeout(timeoutId);
+      }
     }, delay);
   }
 
