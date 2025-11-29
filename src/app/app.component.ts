@@ -1,7 +1,7 @@
 import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { UserInterface, WebSocketState } from '@shared/@interface';
-import {DEFAULT_USER_DATA, ERROR_MESSAGES, MESSAGES} from '@shared/@utils/constants';
+import { DEFAULT_USER_DATA, ERROR_MESSAGES, MESSAGES } from '@shared/@utils/constants';
 import { SubSink } from '@shared/@utils/Subsink';
 import { StateManagerService } from '@shared/services/state-manager.service';
 import { NavbarComponent } from "modules/navbar/components/navbar/navbar.component";

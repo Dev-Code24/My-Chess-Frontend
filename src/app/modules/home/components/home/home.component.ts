@@ -1,6 +1,7 @@
 import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, Router, UrlTree } from '@angular/router';
 
+import { finalize } from 'rxjs';
 import { SubSink } from '@shared/@utils/Subsink';
 import { faDoorOpen, faPlayCircle } from '@fortawesome/free-solid-svg-icons';
 import { JoinRoomApiPayload } from '../../@interface';
@@ -8,7 +9,6 @@ import { ApiError, UserDetails } from '@shared/@interface';
 import { JoinRoomComponent } from "../join-room/join-room.component";
 import { LinkButtonComponent } from "@shared/components/button/link-button/link-button.component";
 import { HomeConnectBackendService } from '../../service/home-connect-backend.service';
-import { finalize } from 'rxjs';
 import { ButtonComponent } from "@shared/components/button/button";
 import { MyChessMessageService, StateManagerService } from '@shared/services';
 import { LoginApiResponse } from '../../../auth/@interface';

@@ -9,7 +9,7 @@ import { ChessboardComponent } from '../chessboard/chessboard.component';
 import { LoaderDialogComponent } from "@shared/components/loader";
 import { MyChessMessageService } from '@shared/services';
 import { isMyTurn } from '../../@utils';
-import { ERROR_MESSAGES } from '@shared/@utils';
+import { ERROR_MESSAGES, MESSAGES } from '@shared/@utils';
 
 @Component({
   selector: 'app-play',
@@ -27,7 +27,7 @@ export class PlayComponent implements OnInit, OnDestroy {
   protected chessboardFen = signal<string | undefined>(undefined);
   protected capturedPieces = signal<string | undefined>(undefined);
   protected winner = signal<PieceColor | null>(null);
-  protected dialogMessage = signal<string>('Waiting for opponent');
+  protected dialogMessage = signal<MESSAGES>(MESSAGES.WAITING_FOR_OPPONENT);
 
   private readonly subsink = new SubSink();
   private readonly stateManagerService = inject(StateManagerService);
@@ -63,7 +63,7 @@ export class PlayComponent implements OnInit, OnDestroy {
 
           const opponent = this.opponent();
           if (opponent && opponent.inGame) {
-            this.dialogMessage.set('Connecting.');
+            this.dialogMessage.set(MESSAGES.CONNECTING);
           }
 
           this.assignWinner(data.gameStatus);
@@ -104,7 +104,7 @@ export class PlayComponent implements OnInit, OnDestroy {
         if (response.includes(opponentDisconnectedMessage)) {
           opponent.inGame = false;
           this.opponent.set(opponent);
-          this.dialogMessage.set('Waiting for opponent');
+          this.dialogMessage.set(MESSAGES.WAITING_FOR_OPPONENT);
           this.messageService.showMessage(response);
         } else if (response.includes('resumed')) {
           opponent.inGame = true;

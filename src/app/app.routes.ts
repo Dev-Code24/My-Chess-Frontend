@@ -1,11 +1,9 @@
 import { Routes } from '@angular/router';
 
-import { authGuard, loginGuard } from '@shared/guards';
-
+import { authGuard, loginGuard, leaveRoomGuard } from '@shared/guards';
 import { AuthComponent } from 'modules/auth/components/auth/auth.component';
 import { HomeComponent } from 'modules/home/components/home/home.component';
 import { PlayComponent } from 'modules/play/components/play/play.component';
-import {leaveRoomGuard} from '@shared/guards/leave-room.guard';
 
 export const routes: Routes = [
   {
