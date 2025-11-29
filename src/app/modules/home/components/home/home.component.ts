@@ -2,10 +2,9 @@ import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, Router, UrlTree } from '@angular/router';
 
 import { SubSink } from '@shared/@utils/Subsink';
-import { COLORS } from '@shared/@utils/constants';
 import { faDoorOpen, faPlayCircle } from '@fortawesome/free-solid-svg-icons';
 import { JoinRoomApiPayload } from '../../@interface';
-import {ApiError, UserDetails, UserInterface} from '@shared/@interface';
+import { ApiError, UserDetails } from '@shared/@interface';
 import { JoinRoomComponent } from "../join-room/join-room.component";
 import { LinkButtonComponent } from "@shared/components/button/link-button/link-button.component";
 import { HomeConnectBackendService } from '../../service/home-connect-backend.service';
