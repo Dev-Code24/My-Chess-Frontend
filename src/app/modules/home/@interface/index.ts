@@ -4,6 +4,10 @@ export interface JoinRoomApiPayload {
   code: string;
 }
 
+export interface LeaveRoomApiPayload {
+  code: string;
+}
+
 interface JoinRoomApiResponseAttribute {
   code: string;
 }

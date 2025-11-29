@@ -14,8 +14,8 @@ export class HomeConnectBackendService {
     return this.commonConnectBackend.get<LoginApiResponse>('/user/me');
   }
 
-  public joinRoom(roomId: JoinRoomApiPayload): Observable<JoinRoomApiResponse> {
-    return this.commonConnectBackend.post<JoinRoomApiResponse>('/room/join', roomId);
+  public joinRoom(payload: JoinRoomApiPayload): Observable<JoinRoomApiResponse> {
+    return this.commonConnectBackend.post<JoinRoomApiResponse>('/room/join', payload);
   }
 
   public createRoom(): Observable<CreateRoomApiResponse> {

@@ -30,7 +30,7 @@ export const leaveRoomGuard : CanDeactivateFn<PlayComponent> = (component) => {
     }
   };
 
-  return connectPlayBackendService.leaveRoom(roomId).pipe(
+  return connectPlayBackendService.leaveRoom({ code: roomId }).pipe(
     timeout(TIMEOUT_IN_MS),
     tap(() => resetLocalUserState()),
     map(() => true),
