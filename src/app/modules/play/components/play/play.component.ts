@@ -1,6 +1,6 @@
-import { Component, effect, inject, input, OnDestroy, OnInit, signal } from '@angular/core';
+import { Component, inject, input, OnDestroy, OnInit, signal } from '@angular/core';
 
-import { ApiError, RoomDetails, UserDetails } from '@shared/@interface';
+import {ApiError, RoomDetails, UserDetails, UserInterface} from '@shared/@interface';
 import { SubSink } from '@shared/@utils/Subsink';
 import { PlayConnectBackendService } from '../../service/play-connect-backend.service';
 import { RoomDetailsApiResponse, Move, PieceColor, LiveRoomInfo } from '../../@interfaces';
@@ -19,30 +19,33 @@ import { ERROR_MESSAGES } from '@shared/@utils';
 })
 export class PlayComponent implements OnInit, OnDestroy {
   public readonly roomId = input.required<string>();
+  public whoIsBlackPlayer = signal<'me' | 'opponent' | undefined>(undefined);
 
   protected opponent = signal<UserDetails | undefined>(undefined);
   protected me = signal<UserDetails | undefined>(undefined);
-  protected whoIsBlackPlayer = signal<'me' | 'opponent' | undefined>(undefined);
   protected opponentsMove = signal<Move | null>(null);
   protected chessboardFen = signal<string | undefined>(undefined);
   protected capturedPieces = signal<string | undefined>(undefined);
   protected winner = signal<PieceColor | null>(null);
+  protected dialogMessage = signal<string>('Waiting for opponent');
 
   private readonly subsink = new SubSink();
   private readonly stateManagerService = inject(StateManagerService);
   private readonly messageService = inject(MyChessMessageService);
   private readonly connectBackend = inject(PlayConnectBackendService);
 
-  constructor() {
-    effect(() => this.me.set(this.stateManagerService.getUser().details!));
-  }
-
   public ngOnInit(): void {
     this.loadRoomAndConnectWebSocket();
+    this.subsink.sink = this.stateManagerService.user$.subscribe({
+      next: (user) => {
+        if (user.isLoggedIn) {
+          this.me.set(user.details);
+        }
+      }
+    });
   }
 
   public ngOnDestroy(): void {
-    this.connectBackend.leaveRoom(this.roomId());
     this.subsink.unsubscribeAll();
   }
 
@@ -57,6 +60,12 @@ export class PlayComponent implements OnInit, OnDestroy {
           const data = response.data;
 
           this.assignPlayerRoles(data.blackPlayer, data.whitePlayer);
+
+          const opponent = this.opponent();
+          if (opponent && opponent.inGame) {
+            this.dialogMessage.set('Connecting.');
+          }
+
           this.assignWinner(data.gameStatus);
           this.chessboardFen.set(data.fen);
           this.capturedPieces.set(data.capturedPieces);
@@ -89,31 +98,33 @@ export class PlayComponent implements OnInit, OnDestroy {
   private listenToRoomUpdates(response: string | RoomDetails | LiveRoomInfo): void {
     const myColor: PieceColor = this.whoIsBlackPlayer() === 'me' ? 'b' : 'w';
     if (typeof response === 'string') {
-      this.messageService.showMessage(response);
-      const opponentDisconnectedMessage = `Player ${this.opponent()!.username} left the room`;
-      if (response.includes(opponentDisconnectedMessage)) {
-        const opponent = this.opponent();
-        if (opponent) {
+      const opponent = this.opponent();
+      if (opponent) {
+        const opponentDisconnectedMessage = `Player ${opponent.username} left the room`;
+        if (response.includes(opponentDisconnectedMessage)) {
           opponent.inGame = false;
           this.opponent.set(opponent);
-        }
-      } else if (response.includes('resumed')) {
-        const opponent = this.opponent();
-        if (opponent) {
+          this.dialogMessage.set('Waiting for opponent');
+          this.messageService.showMessage(response);
+        } else if (response.includes('resumed')) {
           opponent.inGame = true;
           this.opponent.set(opponent);
+          this.messageService.showMessage(response);
         }
       }
       return;
     }
 
     if ('code' in response) {
+      const existingUserDetails: UserInterface = JSON.parse(JSON.stringify(this.stateManagerService.getUser()));
+      const myColor = this.whoIsBlackPlayer() === 'me' ? 'b' : 'w';
+      existingUserDetails.details = myColor === 'w' ? response.whitePlayer : response.whitePlayer;
+
+      this.stateManagerService.updateUser(existingUserDetails);
       this.assignPlayerRoles(response.blackPlayer, response.whitePlayer);
       this.assignWinner(response.gameStatus);
       return;
     }
-
-    console.log(response);
 
     const move = response.move;
     const moveIsBlack = move.piece.color === 'b';

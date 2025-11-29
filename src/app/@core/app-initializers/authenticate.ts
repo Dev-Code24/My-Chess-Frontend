@@ -9,7 +9,7 @@ export function AuthAppInitiazer () {
   const authService = inject(AuthService);
   const commonConnectBackendService = inject(CommonConnectBackendService);
 
-  return commonConnectBackendService.get<LoginApiResponse>('user/me')
+  return commonConnectBackendService.get<LoginApiResponse>('/user/me')
     .pipe(
       tap((value) => { authService.authenticate(value.data); }),
       catchError(() => {

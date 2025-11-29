@@ -7,7 +7,7 @@ import { StateManagerService } from '@shared/services/state-manager.service';
 import { NavbarComponent } from "modules/navbar/components/navbar/navbar.component";
 import { ToastComponent } from "@shared/components/toast/toast.component";
 import { MyChessMessageService, WebsocketService } from '@shared/services';
-import { interval, tap } from 'rxjs';
+import { catchError, distinctUntilChanged, EMPTY, interval, map, merge, switchMap, tap } from 'rxjs';
 
 @Component({
   selector: 'app-root',
@@ -27,22 +27,30 @@ export class AppComponent implements OnInit, OnDestroy {
   public ngOnInit(): void {
     this.subsink.sink = this.stateManagerService.user$
       .pipe(
-        tap((user) => this.user.set(user)),
-      )
-      .subscribe({
-        next: (user) => {
-          if (user.isLoggedIn) {
-            this.subsink.sink = this.wsService.connect().subscribe({
-              next: () => this.messageService.showSuccess(MESSAGES.WEBSOCKET_CONNECTED),
-              error: () => this.messageService.showError(ERROR_MESSAGES.WEBSOCKET_CONNECTION_FAILED),
-            });
+        tap((user: UserInterface) => this.user.set(user)),
+        map((user: UserInterface) => user.isLoggedIn),
+        distinctUntilChanged(),
+        switchMap((isLoggedIn: boolean) => {
+          if (isLoggedIn) {
+            const connection$ = this.wsService.connect().pipe(
+              tap(() => this.messageService.showSuccess(MESSAGES.WEBSOCKET_CONNECTED)),
+              catchError(() => {
+                this.messageService.showError(ERROR_MESSAGES.WEBSOCKET_CONNECTION_FAILED);
+                return EMPTY;
+              })
+            );
 
-            this.subsink.sink = interval(10_000).subscribe(() => this.wsService.checkHeartbeat());
+            const heartbeat$ = interval(10_000).pipe(
+              tap(() => this.wsService.checkHeartbeat())
+            );
+
+            return merge(connection$, heartbeat$);
           } else {
             this.wsService.disconnect();
+            return EMPTY;
           }
-        }
-      });
+        })
+      ).subscribe();
 
     this.subsink.sink = this.stateManagerService.wsStateNotification$.subscribe((message) => {
       if (this.stateManagerService.getWsConnectionState() !== WebSocketState.CONNECTED) {

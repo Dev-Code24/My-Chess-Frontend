@@ -26,11 +26,7 @@ export class PlayConnectBackendService {
     this.commonConnectBackend.wsSend(`/room/${code}/join`, {});
   }
 
-  public leaveRoom(code: string): void {
-    this.commonConnectBackend.wsSend(`/room/${code}/leave`, {});
-  }
-
-  public disconnect(): void {
-    this.commonConnectBackend.wsDisconnect();
+  public leaveRoom(code: string): Observable<RoomDetailsApiResponse> {
+    return this.commonConnectBackend.post<RoomDetailsApiResponse>(`/room/${code}/leave`);
   }
 }

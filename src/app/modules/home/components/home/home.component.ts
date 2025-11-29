@@ -5,13 +5,14 @@ import { SubSink } from '@shared/@utils/Subsink';
 import { COLORS } from '@shared/@utils/constants';
 import { faDoorOpen, faPlayCircle } from '@fortawesome/free-solid-svg-icons';
 import { JoinRoomApiPayload } from '../../@interface';
-import { ApiError } from '@shared/@interface';
+import {ApiError, UserDetails, UserInterface} from '@shared/@interface';
 import { JoinRoomComponent } from "../join-room/join-room.component";
 import { LinkButtonComponent } from "@shared/components/button/link-button/link-button.component";
-import { HomeConnectBackendService } from 'modules/home/service/home-connect-backend.service';
+import { HomeConnectBackendService } from '../../service/home-connect-backend.service';
 import { finalize } from 'rxjs';
-import { ButtonComponent } from "../../../shared/components/button/button/button.component";
-import { MyChessMessageService } from '@shared/services';
+import { ButtonComponent } from "@shared/components/button/button";
+import { MyChessMessageService, StateManagerService } from '@shared/services';
+import { LoginApiResponse } from '../../../auth/@interface';
 
 @Component({
   selector: 'app-home',
@@ -22,7 +23,6 @@ import { MyChessMessageService } from '@shared/services';
 export class HomeComponent implements OnInit, OnDestroy {
   protected playIcon = faPlayCircle;
   protected joinRoomIcon = faDoorOpen;
-  protected BG = COLORS.bg;
   protected joinRoomUrl!: UrlTree;
   protected isJoinFormDialogVisible = signal<boolean>(false);
   protected isLoading = signal<boolean>(false);
@@ -32,8 +32,10 @@ export class HomeComponent implements OnInit, OnDestroy {
   private readonly route = inject(ActivatedRoute);
   private readonly messageService = inject(MyChessMessageService);
   private readonly connectBackend = inject(HomeConnectBackendService);
+  private readonly stateManagerService = inject(StateManagerService);
 
   public ngOnInit(): void {
+    this.getUserDetails();
     this.joinRoomUrl = this.router.createUrlTree(['home'], { queryParams: { joinRoom: true, }, });
     this.subsink.sink = this.route.queryParams.subscribe((params) => {
       if (params['joinRoom'] === 'true') {
@@ -45,7 +47,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   public ngOnDestroy(): void {
     this.subsink.unsubscribeAll();
   }
-  // TODO: Figure out what to do with create and join room responses or make the API responses send nothing
+
   protected createRoom(): void {
     this.isLoading.set(true);
     let code: string;
@@ -85,5 +87,15 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   private navigateToRoom(code: string) {
     this.router.navigate([`play/${code}`]);
+  }
+
+  private getUserDetails(): void {
+    this.subsink.sink = this.connectBackend.getUserDetails().subscribe({
+      next: (response: LoginApiResponse) => {
+        const user = this.stateManagerService.getUser();
+        user.details = response.data as UserDetails;
+        this.stateManagerService.updateUser(user);
+      }
+    });
   }
 }
