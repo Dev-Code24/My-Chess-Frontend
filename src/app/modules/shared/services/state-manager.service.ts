@@ -22,12 +22,11 @@ export class StateManagerService {
   public getUser(): UserInterface { return this.userSubject.value; }
   public updateUser(updatedUserField: UserInterface): void { this.userSubject.next(updatedUserField); }
   public resetUser(): void { this.userSubject.next(DEFAULT_USER_DATA); }
-
   public isMyTurn(): boolean { return this.myTurnSubject.value; }
   public updateIsMyTurn(myTurn: boolean): void { this.myTurnSubject.next(myTurn); }
 
   /* WEBSOCKET STATE METHODS */
-  public updateWsState(message: string) { this.wsStateNotification.next(message); }
+  public updateWsStateNotification(message: string) { this.wsStateNotification.next(message); }
 
   public getWsConnectionState(): WebSocketState { return this.wsConnectionState.value; }
 

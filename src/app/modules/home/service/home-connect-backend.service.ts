@@ -2,6 +2,7 @@ import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { CreateRoomApiResponse, JoinRoomApiPayload, JoinRoomApiResponse } from '../@interface';
 import { CommonConnectBackendService } from '@shared/services';
+import { LoginApiResponse } from '../../auth/@interface';
 
 @Injectable({
   providedIn: 'root',
@@ -9,10 +10,12 @@ import { CommonConnectBackendService } from '@shared/services';
 export class HomeConnectBackendService {
   private readonly commonConnectBackend = inject(CommonConnectBackendService);
 
-  constructor() {}
-  // TODO: Change join room to use dynamic route instead of request body
-  public joinRoom(roomId: JoinRoomApiPayload): Observable<JoinRoomApiResponse> {
-    return this.commonConnectBackend.post<JoinRoomApiResponse>('/room/join', roomId);
+  public getUserDetails(): Observable<LoginApiResponse> {
+    return this.commonConnectBackend.get<LoginApiResponse>('/user/me');
+  }
+
+  public joinRoom(payload: JoinRoomApiPayload): Observable<JoinRoomApiResponse> {
+    return this.commonConnectBackend.post<JoinRoomApiResponse>('/room/join', payload);
   }
 
   public createRoom(): Observable<CreateRoomApiResponse> {

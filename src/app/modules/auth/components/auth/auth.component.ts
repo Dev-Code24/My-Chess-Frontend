@@ -13,7 +13,7 @@ import { AUTH } from '../../@utils/constants';
 import { COLORS } from '@shared/@utils/constants';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { ApiError } from '@shared/@interface';
-import { MyChessMessageService, WebsocketService } from '@shared/services';
+import { MyChessMessageService } from '@shared/services';
 
 @Component({
   selector: 'app-auth',
@@ -27,7 +27,6 @@ export class AuthComponent  {
   private readonly messageService = inject(MyChessMessageService);
   private readonly authService = inject(AuthService);
   private readonly connectBackend = inject(AuthConnectBackendService);
-  private readonly websocketService = inject(WebsocketService);
 
   protected readonly CONSTANTS = {...AUTH, ...COLORS};
   protected activeIndex = computed(() => this.router.url.includes('login') ? 0 : 1);
@@ -55,7 +54,6 @@ export class AuthComponent  {
         this.connectBackend.login(payload).subscribe({
           next: (res: LoginApiResponse) => {
             this.authService.authenticate(res.data);
-            this.websocketService.connect().subscribe();
           },
           error: (error: ApiError) => {
             this.messageService.showError('🥲 Something bad happened' + error.error.message);
@@ -67,7 +65,6 @@ export class AuthComponent  {
         this.connectBackend.signup(payload).subscribe({
           next: (res: SignupApiResponse) => {
             this.authService.authenticate(res.data);
-            this.websocketService.connect().subscribe();
           },
           error: (error: ApiError) => {
             this.messageService.showError('🥲 Something bad happened' + error.error.message);

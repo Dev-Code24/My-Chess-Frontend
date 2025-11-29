@@ -1,17 +1,25 @@
-<!-- TODO: Work on showing the waiting for opponent modal -->
-@if (opponent() && opponent()?.inGame && me() && whoIsBlackPlayer() && capturedPieces()) {
+@let currentUser = me();
+@let currentOpponent = opponent();
+@let currentBlackPlayer = whoIsBlackPlayer();
+@let fen = chessboardFen();
+@let capturedPiecesNotation = capturedPieces();
+
+@if (
+  currentOpponent && currentOpponent.inGame &&
+  currentUser &&  currentUser.inGame && currentBlackPlayer &&
+  capturedPiecesNotation && fen
+  ) {
   <div class="h-full">
     <app-chessboard
-      [me]="me()!"
-      [opponent]="opponent()!"
-      [whoIsBlackPlayer]="whoIsBlackPlayer()!"
+      [me]="currentUser"
+      [opponent]="currentOpponent"
+      [whoIsBlackPlayer]="currentBlackPlayer"
       [opponentsMove]="opponentsMove()"
       (move)="onPieceMoved($event)"
-      [chessboardFen]="chessboardFen()!"
-      [capturedPieces]="capturedPieces()!"
+      [chessboardFen]="fen"
+      [capturedPieces]="capturedPiecesNotation"
       [winner]="winner()" />
   </div>
 } @else {
-  <mc-loaderDialog
-    message="Waiting for opponent..."/>
+  <mc-loaderDialog [message]="dialogMessage()"/>
 }

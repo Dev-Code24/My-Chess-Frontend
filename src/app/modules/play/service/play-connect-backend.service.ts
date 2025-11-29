@@ -3,6 +3,7 @@ import { RoomDetails } from '@shared/@interface';
 import { CommonConnectBackendService } from '@shared/services';
 import { Observable } from 'rxjs';
 import { LiveRoomInfo, Move, RoomDetailsApiResponse } from '../@interfaces';
+import { LeaveRoomApiPayload } from '../../home/@interface';
 
 @Injectable({
   providedIn: 'root'
@@ -12,10 +13,6 @@ export class PlayConnectBackendService {
 
   public getRoomDetails(code: string): Observable<RoomDetailsApiResponse> {
     return this.commonConnectBackend.get<RoomDetailsApiResponse>(`/room/${code}`);
-  }
-
-  public initializeConnection(): Observable<void> {
-    return this.commonConnectBackend.wsConnect();
   }
 
   public subscribeToRoom(code: string): Observable<RoomDetails | LiveRoomInfo | string> {
@@ -30,11 +27,7 @@ export class PlayConnectBackendService {
     this.commonConnectBackend.wsSend(`/room/${code}/join`, {});
   }
 
-  public leaveRoom(code: string): void {
-    this.commonConnectBackend.wsSend(`/room/${code}/leave`, {});
-  }
-
-  public disconnect(): void {
-    this.commonConnectBackend.wsDisconnect();
+  public leaveRoom(payload: LeaveRoomApiPayload): Observable<RoomDetailsApiResponse> {
+    return this.commonConnectBackend.post<RoomDetailsApiResponse>(`/room/leave`, payload);
   }
 }

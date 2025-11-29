@@ -1,8 +1,8 @@
 import { UserInterface } from '@shared/@interface';
 
-export const DEFAULT_USER_DATA: UserInterface = {
+export const DEFAULT_USER_DATA : UserInterface = {
   isLoggedIn: false,
-  details: null
+  details: null,
 };
 
 export const COLORS = {
@@ -21,7 +21,20 @@ export const COLORS = {
   },
 };
 
-export enum ERRORS {
-  WEBSOCKET_CONNECTION_FAILED = 'WebSocket connection failed.',
-  WEBSOCKET_DISCONNECTED_ABRUPTLY = 'WebSocket disconnected abruptly. Please reload.',
+export enum ERROR_MESSAGES {
+  WEBSOCKET_CONNECTION_FAILED = 'Failed to connect to the server.',
+  WEBSOCKET_DISCONNECTED_ABRUPTLY = 'Disconnected from the server. Please reload.',
+  WEBSOCKET_RECONNECTION_FAILED = 'Reconnection failed.',
+  DISCONNECTED_FROM_SERVER = 'Disconnected from the server.',
+  FAILED_LEAVING_ROOM = 'Failed to leave room.',
 }
+
+export enum MESSAGES {
+  WEBSOCKET_CONNECTION_RESTORED = 'Connection restored.',
+  WEBSOCKET_RETRYING = 'Trying to reconnect',
+  WEBSOCKET_CONNECTED = 'Connected to the server.',
+  WAITING_FOR_OPPONENT = 'Waiting for opponent.',
+  CONNECTING = 'Connecting.',
+}
+
+export const TIMEOUT_IN_MS = 10000;
