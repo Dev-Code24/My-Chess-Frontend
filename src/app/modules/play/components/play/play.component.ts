@@ -118,7 +118,7 @@ export class PlayComponent implements OnInit, OnDestroy {
     if ('code' in response) {
       const existingUserDetails: UserInterface = JSON.parse(JSON.stringify(this.stateManagerService.getUser()));
       const myColor = this.whoIsBlackPlayer() === 'me' ? 'b' : 'w';
-      existingUserDetails.details = myColor === 'w' ? response.whitePlayer : response.whitePlayer;
+      existingUserDetails.details = myColor === 'w' ? response.whitePlayer : response.blackPlayer;
 
       this.stateManagerService.updateUser(existingUserDetails);
       this.assignPlayerRoles(response.blackPlayer, response.whitePlayer);
