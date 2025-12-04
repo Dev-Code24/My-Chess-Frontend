@@ -56,7 +56,11 @@ export class AuthComponent  {
             this.authService.authenticate(res.data);
           },
           error: (error: ApiError) => {
-            this.messageService.showError('🥲 Something bad happened' + error.error.message);
+            if (error.error.message) {
+              this.messageService.showError('🥲 Something bad happened '  + error.error.message);
+            } else {
+              this.messageService.showError('🥲 Something bad happened');
+            }
           },
           complete: () => this.router.navigate(['home'])
         });
@@ -67,7 +71,11 @@ export class AuthComponent  {
             this.authService.authenticate(res.data);
           },
           error: (error: ApiError) => {
-            this.messageService.showError('🥲 Something bad happened' + error.error.message);
+            if (error.error.message) {
+              this.messageService.showError('🥲 Something bad happened '  + error.error.message);
+            } else {
+              this.messageService.showError('🥲 Something bad happened');
+            }
           },
           complete: () => this.router.navigate(['home'])
         });
