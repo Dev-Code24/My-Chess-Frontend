@@ -35,6 +35,8 @@ export enum MESSAGES {
   WEBSOCKET_CONNECTED = 'Connected to the server.',
   WAITING_FOR_OPPONENT = 'Waiting for opponent.',
   CONNECTING = 'Connecting.',
+  USER_ONLINE = 'You\'re online.',
+  USER_OFFLINE = 'You\'re offline. Check network connection.',
 }
 
 export const TIMEOUT_IN_MS = 10000;
