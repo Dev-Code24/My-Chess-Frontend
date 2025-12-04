@@ -1,5 +1,6 @@
 import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+
 import { UserInterface, WebSocketState } from '@shared/@interface';
 import { DEFAULT_USER_DATA, ERROR_MESSAGES, MESSAGES } from '@shared/@utils/constants';
 import { SubSink } from '@shared/@utils/Subsink';
@@ -8,6 +9,7 @@ import { NavbarComponent } from "modules/navbar/components/navbar/navbar.compone
 import { ToastComponent } from "@shared/components/toast/toast.component";
 import { MyChessMessageService, WebsocketService } from '@shared/services';
 import { catchError, distinctUntilChanged, EMPTY, interval, map, merge, switchMap, tap } from 'rxjs';
+import { NetworkStatusService } from '@core/services/network-status.service';
 
 @Component({
   selector: 'app-root',
@@ -21,7 +23,8 @@ export class AppComponent implements OnInit, OnDestroy {
 
   private readonly messageService = inject(MyChessMessageService);
   private readonly stateManagerService = inject(StateManagerService);
-  private readonly wsService= inject(WebsocketService);
+  private readonly wsService = inject(WebsocketService);
+  private readonly networkStatusService = inject(NetworkStatusService);
   private readonly subsink = new SubSink();
 
   public ngOnInit(): void {
@@ -59,6 +62,14 @@ export class AppComponent implements OnInit, OnDestroy {
         this.messageService.showSuccess(message);
       }
     });
+
+    this.subsink.sink = this.networkStatusService.onlineStatus$.subscribe((isOnline) => {
+      if (isOnline) {
+        this.messageService.showSuccess(MESSAGES.USER_ONLINE);
+      } else {
+        this.messageService.showWarning(MESSAGES.USER_OFFLINE);
+      }
+    })
   }
 
   public ngOnDestroy(): void {
