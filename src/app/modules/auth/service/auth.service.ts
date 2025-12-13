@@ -1,7 +1,7 @@
 import { inject, Injectable } from '@angular/core';
 import { StateManagerService } from '@shared/services/state-manager.service';
-import { DEFAULT_USER_DATA } from '@shared/@utils/constants';
-import { LoginApiResponseAttribute } from '../@interface';
+import { DEFAULT_USER_DATA } from '@shared/@utils';
+import { LoginApiResponseAttribute } from '@shared/@interface';
 
 @Injectable({
   providedIn: 'root'

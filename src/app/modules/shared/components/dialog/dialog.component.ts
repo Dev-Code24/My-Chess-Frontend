@@ -3,8 +3,8 @@ import {
   viewChild
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { DialogConfig } from '@shared/@interface/ui';
-import { COLORS } from '@shared/@utils/constants';
+import { DialogConfig } from '@shared/@interface';
+import { COLORS } from '@shared/@utils';
 
 @Component({
   selector: 'mc-dialog',

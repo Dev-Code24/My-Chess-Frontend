@@ -15,12 +15,14 @@ export class WebsocketService {
   private reconnectAttempts = 0;
   private lastHeartbeat = Date.now();
   private hasConnectedBefore = false;
+  private intentionalDisconnect = false;
   private messageQueue: { destination: string; body: unknown }[] = [];
   private subscriptions = new Map<string, messageCallbackType>();
   private readonly stateManagerService = inject(StateManagerService);
 
   public connect(): Observable<void> {
     return new Observable((observer) => {
+      this.intentionalDisconnect = false;
       this.stateManagerService.setWsConnecting();
       this.createClient(observer);
       this.client.activate();
@@ -71,6 +73,8 @@ export class WebsocketService {
 
   public disconnect(): void {
     if (this.client && this.isConnected) {
+      console.log('disconnecting...');
+      this.intentionalDisconnect = true;
       this.isConnected = false;
       this.stateManagerService.setWsDisconnected();
       this.client.deactivate();
@@ -119,7 +123,9 @@ export class WebsocketService {
       },
       onWebSocketClose: () => {
         this.stateManagerService.setWsDisconnected();
-        this.handleServerCrash();
+        if (!this.intentionalDisconnect) {
+          this.handleServerCrash();
+        }
       },
       onStompError: (error) => {
         this.stateManagerService.setWsDisconnected();

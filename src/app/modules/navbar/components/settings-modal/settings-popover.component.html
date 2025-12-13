@@ -1,0 +1,15 @@
+<mc-popover [popoverId]="popoverId()">
+  <div class="w-[6.25rem]">
+    @for (item of settingOptionsLabel; track $index) {
+      <div class="w-full flex flex-row justify-between">
+        <mc-button
+        [label]="item.title"
+        [icon]="item.icon"
+        class="w-full"
+        styleClass="w-full bg-none text-purple-900 hover:bg-none active:bg-purple-900 disabled:bg-purple-400 w-full h-full"
+        (click)="handleClick(item.title)"
+        />
+      </div>
+    }
+  </div>
+</mc-popover>

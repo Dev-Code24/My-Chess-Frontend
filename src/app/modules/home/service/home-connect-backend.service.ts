@@ -2,7 +2,7 @@ import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { CreateRoomApiResponse, JoinRoomApiPayload, JoinRoomApiResponse } from '../@interface';
 import { CommonConnectBackendService } from '@shared/services';
-import { LoginApiResponse } from '../../auth/@interface';
+import { LoginApiResponse } from '@shared/@interface';
 
 @Injectable({
   providedIn: 'root',

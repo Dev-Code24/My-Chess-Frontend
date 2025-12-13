@@ -3,9 +3,9 @@ import { Component, inject, output, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 
-import { AuthForm } from '../../@interface';
+import { AuthForm } from '@shared/@interface';
 import { LOGIN } from '../../@utils/constants';
-import { COLORS } from '@shared/@utils/constants';
+import { COLORS } from '@shared/@utils';
 import { faEye, faEyeSlash } from '@fortawesome/free-regular-svg-icons';
 import { ButtonComponent } from "@shared/components/button/button";
 

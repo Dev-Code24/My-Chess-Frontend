@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { LoginApiPayload, LoginApiResponse, SignupApiPayload, SignupApiResponse } from '../@interface';
+import { LoginApiPayload, LoginApiResponse, SignupApiPayload, SignupApiResponse } from '@shared/@interface';
 import { CommonConnectBackendService } from '@shared/services';
 
 @Injectable({

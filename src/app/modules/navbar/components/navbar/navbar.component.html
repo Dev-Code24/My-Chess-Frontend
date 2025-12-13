@@ -1,11 +1,18 @@
+@let authenticatedUser = user();
 <div
   class="navbar-container h-full w-full flex justify-between items-center {{ user().details!.inGame ? 'justify-center' : 'justify-between' }}">
   <div class="navbar-mc-logo-container">
     <MyChessLogo size="sm" />
   </div>
-  @if (!user().details!.inGame) {
-    <div class="navbar-mc-avatar-container">
-      <mc-avatar [label]="user().details!.username" [actionable]="true"  />
+  @if (authenticatedUser.details && !authenticatedUser.details.inGame) {
+    <div #avatarContainer class="navbar-mc-avatar-container">
+      <mc-avatar
+        [label]="authenticatedUser.details.username" [actionable]="true"
+        (click)="openSettings(avatarContainer)"/>
     </div>
   }
 </div>
+
+@if (authenticatedUser.details && !authenticatedUser.details.inGame) {
+  <app-settings-popover [popoverId]="popoverId" />
+}

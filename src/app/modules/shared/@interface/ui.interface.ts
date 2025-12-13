@@ -22,3 +22,9 @@ export interface ToastItem {
   paused: boolean;
   createdAt: number;
 }
+
+export interface Popover {
+  id: string;
+  anchor: HTMLElement;
+  isOpen: boolean;
+}
