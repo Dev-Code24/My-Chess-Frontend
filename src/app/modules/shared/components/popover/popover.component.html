@@ -1,0 +1,13 @@
+@let position = popoverPosition();
+@if (isPopoverOpen() && position) {
+  <div
+    #popoverElement
+    class="absolute bg-white rounded-lg shadow-xl border border-gray-200 p-2 z-999
+    animate-scale-in"
+    [style.left.px]="position.left"
+    [style.top.px]="position.top"
+    (click)="$event.stopPropagation()"
+    >
+    <ng-content></ng-content>
+  </div>
+}

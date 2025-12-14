@@ -2,7 +2,7 @@ import { inject } from "@angular/core";
 import { catchError, of, tap } from "rxjs";
 
 import { AuthService } from "modules/auth/service";
-import { LoginApiResponse } from "modules/auth/@interface";
+import { LoginApiResponse } from "@shared/@interface";
 import { CommonConnectBackendService } from "@shared/services";
 
 export function AuthAppInitiazer () {

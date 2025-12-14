@@ -8,7 +8,7 @@ import { MyChessLogoComponent } from "@shared/components";
 
 import { AuthConnectBackendService } from 'modules/auth/service/auth-connect-backend.service';
 import { AuthService } from 'modules/auth/service/auth.service';
-import { AuthForm, LoginApiResponse, SignupApiResponse } from 'modules/auth/@interface';
+import { AuthForm, LoginApiResponse, SignupApiResponse } from '@shared/@interface';
 import { AUTH } from '../../@utils/constants';
 import { COLORS } from '@shared/@utils/constants';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
@@ -57,7 +57,7 @@ export class AuthComponent  {
           },
           error: (error: ApiError) => {
             if (error.error.message) {
-              this.messageService.showError('🥲 Something bad happened '  + error.error.message);
+              this.messageService.showError(error.error.message);
             } else {
               this.messageService.showError('🥲 Something bad happened');
             }
@@ -72,7 +72,7 @@ export class AuthComponent  {
           },
           error: (error: ApiError) => {
             if (error.error.message) {
-              this.messageService.showError('🥲 Something bad happened '  + error.error.message);
+              this.messageService.showError(error.error.message);
             } else {
               this.messageService.showError('🥲 Something bad happened');
             }

@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, effect, input, signal } from '@angular/core';
+import { Component, computed, input } from '@angular/core';
 import { IconSize } from '@shared/@interface';
 import { randomHSLGenerator } from '@shared/@utils/utils';
 

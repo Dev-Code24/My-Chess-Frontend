@@ -27,6 +27,7 @@ export enum ERROR_MESSAGES {
   WEBSOCKET_RECONNECTION_FAILED = 'Reconnection failed.',
   DISCONNECTED_FROM_SERVER = 'Disconnected from the server.',
   FAILED_LEAVING_ROOM = 'Failed to leave room.',
+  COULD_NOT_LOG_OUT = 'Could not logout. Try Again.',
 }
 
 export enum MESSAGES {
@@ -37,6 +38,7 @@ export enum MESSAGES {
   CONNECTING = 'Connecting.',
   USER_ONLINE = 'You\'re online.',
   USER_OFFLINE = 'You\'re offline. Check network connection.',
+  LOGGED_OUT = 'Logged out successfully.',
 }
 
 export const TIMEOUT_IN_MS = 10000;
