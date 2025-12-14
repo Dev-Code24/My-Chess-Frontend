@@ -57,7 +57,7 @@ export class AuthComponent  {
           },
           error: (error: ApiError) => {
             if (error.error.message) {
-              this.messageService.showError('🥲 Something bad happened '  + error.error.message);
+              this.messageService.showError(error.error.message);
             } else {
               this.messageService.showError('🥲 Something bad happened');
             }
@@ -72,7 +72,7 @@ export class AuthComponent  {
           },
           error: (error: ApiError) => {
             if (error.error.message) {
-              this.messageService.showError('🥲 Something bad happened '  + error.error.message);
+              this.messageService.showError(error.error.message);
             } else {
               this.messageService.showError('🥲 Something bad happened');
             }

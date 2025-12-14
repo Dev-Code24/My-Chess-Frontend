@@ -7,8 +7,7 @@ import { PopoverComponent } from '@shared/components';
 import { ButtonComponent } from '@shared/components/button/button';
 import { NavbarConnectBackendService } from 'modules/navbar/service';
 import { MyChessMessageService, PopoverService, StateManagerService } from '@shared/services';
-import { SubSink } from '@shared/@utils';
-import { UserInterface } from '@shared/@interface';
+import { ERROR_MESSAGES, MESSAGES, SubSink } from '@shared/@utils';
 
 @Component({
   selector: 'app-settings-popover',
@@ -27,8 +26,8 @@ export class SettingsPopoverComponent implements OnDestroy {
 
   private readonly subsink = new SubSink();
   private readonly router = inject(Router);
-  private readonly messageService = inject(MyChessMessageService);
   private readonly popooverService = inject(PopoverService);
+  private readonly messageService = inject(MyChessMessageService);
   private readonly stateManagerService = inject(StateManagerService);
   private readonly connectBackendService = inject(NavbarConnectBackendService);
 
@@ -44,18 +43,13 @@ export class SettingsPopoverComponent implements OnDestroy {
   }
 
   private handleLogout(): void {
-    const user: UserInterface = this.stateManagerService.getUser();
-    if (user.isLoggedIn) {
-      const { email } = user.details;
-      const logoutApiPayload = { email };
-
-      this.subsink.sink = this.connectBackendService.logout(logoutApiPayload).subscribe({
-        next: () => {
-          this.stateManagerService.resetUser();
-          this.router.navigate(['auth'], { queryParams: { login: true } });
-        },
-        error: () => this.messageService.showError('Could not logout. Try Again.')
-      });
-    }
+    this.subsink.sink = this.connectBackendService.logout().subscribe({
+      next: () => {
+        this.stateManagerService.resetUser();
+        this.messageService.showSuccess(MESSAGES.LOGGED_OUT);
+        this.router.navigate(['auth'], { queryParams: { login: true } });
+      },
+      error: () => this.messageService.showError(ERROR_MESSAGES.COULD_NOT_LOG_OUT)
+    });
   }
 }

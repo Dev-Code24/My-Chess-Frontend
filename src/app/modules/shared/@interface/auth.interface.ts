@@ -29,10 +29,6 @@ export interface LoginApiPayload {
   password: string;
 }
 
-export interface LogoutApiPayload {
-  email: string;
-}
-
 export interface LoginApiResponseAttribute extends UserDetails { }
 export interface LoginApiResponse extends BasicApiResponse<LoginApiResponseAttribute> { }
 export interface SignupApiResponseAttribute extends UserDetails { }
