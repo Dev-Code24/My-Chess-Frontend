@@ -158,7 +158,7 @@ export class ChessboardComponent implements OnDestroy {
     this.isHoverSquareVisible.set(false);
   }
 
-  protected onPieceMouseDown(event: MouseEvent | TouchEvent, piece: PieceDetails) {
+  protected onPiecePointerDown(event: MouseEvent | TouchEvent, piece: PieceDetails) {
     event.preventDefault();
     event.stopPropagation();
 
@@ -180,10 +180,8 @@ export class ChessboardComponent implements OnDestroy {
       this.startRowCol.set({ row: piece.row, col: piece.col });
       this.dragX.set(piece.col * 12.5);
       this.dragY.set(piece.row * 12.5);
-      window.addEventListener('mousemove', this.onMouseMove);
-      window.addEventListener('mouseup', this.onMouseUp);
-      window.addEventListener('touchmove', this.onMouseMove, { passive: true });
-      window.addEventListener('touchend', this.onMouseUp);
+      window.addEventListener('pointermove', this.onMouseMove);
+      window.addEventListener('pointerup', this.onMouseUp);
     }
   }
 

@@ -25,8 +25,6 @@ export class JoinRoomComponent {
   protected dialogConfig: DialogConfig = {
     width: '40rem',
     height: '22rem',
-    top: '50%',
-    left: '50%',
     closable: true,
     backdrop: true,
   };
