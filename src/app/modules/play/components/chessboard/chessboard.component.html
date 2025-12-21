@@ -71,8 +71,7 @@
             [style.zIndex]="draggingPiece()?.id === piece.id ? 10 : 1"
             [style.left.%]="draggingPiece()?.id === piece.id ? dragX() : piece.col * 12.5"
             [style.top.%]="draggingPiece()?.id === piece.id ? dragY() : piece.row * 12.5"
-            (mousedown)="onPieceMouseDown($event, piece)"
-            (touchstart)="onPieceMouseDown($event, piece)">
+            (pointerdown)="onPiecePointerDown($event, piece)">
           </div>
         }
       </div>

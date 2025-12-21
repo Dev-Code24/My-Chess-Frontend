@@ -1,5 +1,5 @@
 @if (isVisible()) {
-  <div class="fixed inset-0 z-[1000]">
+  <div class="fixed inset-0 z-[1000] flex justify-center items-center">
     <!-- Backdrop -->
     <div
       class="cursor-pointer fixed inset-0 bg-black/50 backdrop-blur-sm z-[9998]"
@@ -15,8 +15,8 @@
       [ngStyle]="{
         width: config().width,
         height: config().height,
-        top: topAndLeft().top,
-        left: topAndLeft().left
+        top: config().top,
+        left: config().left
       }"
       (keydown.escape)="onEscapeKey($event)"
       tabindex="0">

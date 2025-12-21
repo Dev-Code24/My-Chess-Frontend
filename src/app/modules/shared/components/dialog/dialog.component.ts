@@ -17,8 +17,8 @@ export class DialogComponent {
   public config = input<DialogConfig>({
     width: '300px',
     height: '200px',
-    top: '50%',
-    left: '50%',
+    top: '0%',
+    left: '0%',
     closable: true,
     backdrop: true,
   });
@@ -27,22 +27,6 @@ export class DialogComponent {
   public onDialogClose = output();
 
   protected BG = COLORS.bg;
-  protected topAndLeft = computed(() => {
-    const pattern = /[a-zA-Z%]+$/;
-
-    const width = this.config().width!;
-    const widthUnit = width.match(pattern)?.[0] || 'px';
-    const halfWidth = parseFloat(width) / 2;
-
-    const height = this.config().height!;
-    const heightUnit = height.match(pattern)?.[0] || 'px';
-    const halfHeight = parseFloat(height) / 2;
-
-    return {
-      top: `calc(${this.config().top} - ${halfHeight}${heightUnit})`,
-      left: `calc(${this.config().left} - ${halfWidth}${widthUnit})`
-    };
-  });
 
   constructor() {
     effect(() => {
