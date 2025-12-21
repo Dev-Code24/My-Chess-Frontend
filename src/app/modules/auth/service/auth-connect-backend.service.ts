@@ -15,6 +15,6 @@ export class AuthConnectBackendService {
     return this.commonConnectBackend.post<LoginApiResponse>('/auth/login', payload);
   }
   public signup(payload: SignupApiPayload): Observable<SignupApiResponse> {
-    return this.commonConnectBackend.post<SignupApiResponse>('/auth/signup', payload);
+    return this.commonConnectBackend.post<SignupApiResponse>('/auth/signup', payload, { withCredentials: false });
   }
 }
