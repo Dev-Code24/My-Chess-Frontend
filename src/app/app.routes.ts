@@ -4,6 +4,7 @@ import { authGuard, loginGuard, leaveRoomGuard } from '@shared/guards';
 import { AuthComponent } from 'modules/auth/components/auth/auth.component';
 import { HomeComponent } from 'modules/home/components/home/home.component';
 import { PlayComponent } from 'modules/play/components/play/play.component';
+import { EasterEggComponent } from 'modules/easter-egg/easter-egg/easter-egg.component';
 
 export const routes: Routes = [
   {
@@ -12,8 +13,12 @@ export const routes: Routes = [
     component: AuthComponent,
   },
   {
+    path: 'hello-world',
+    component: EasterEggComponent,
+  },
+  {
     path: '',
-    canActivate: [authGuard],
+    canActivateChild: [authGuard],
     children: [
       { path: '', redirectTo: 'home', pathMatch: 'full' },
       { path: 'home', component: HomeComponent },

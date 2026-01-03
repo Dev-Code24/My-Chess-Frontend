@@ -1,16 +1,19 @@
-import { Component, input } from '@angular/core';
-import { MyChessLogoIconComponent } from "./my-chess-logo-icon/my-chess-logo-icon.component";
-import { IconSize } from '@shared/@interface';
+import { Component, inject, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
+import { MyChessLogoIconComponent } from "@shared/components";
+import { IconSize } from '@shared/@interface';
 
 @Component({
   selector: 'MyChessLogo',
   standalone: true,
-  imports: [ MyChessLogoIconComponent, CommonModule ],
+  imports: [ MyChessLogoIconComponent, CommonModule, RouterLink ],
   template: `
     <div [ngClass]="[ getPaddings[0], 'text-lime-500 ml-4 select-none', getSizeClass ]" >
-      <MyChessLogoIcon [size]="size()" />
-      <span [ngClass]="getPaddings[1]">MyChess</span>
+      <a routerLink="/">
+        <MyChessLogoIcon [size]="size()" />
+        <span [ngClass]="getPaddings[1]">MyChess</span>
+      </a>
     </div>
   `
 })

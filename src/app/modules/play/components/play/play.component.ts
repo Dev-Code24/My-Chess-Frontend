@@ -15,7 +15,6 @@ import { ERROR_MESSAGES, MESSAGES } from '@shared/@utils';
   selector: 'app-play',
   imports: [ChessboardComponent, LoaderDialogComponent],
   templateUrl: './play.component.html',
-  styleUrl: './play.component.scss'
 })
 export class PlayComponent implements OnInit, OnDestroy {
   public readonly roomId = input.required<string>();
