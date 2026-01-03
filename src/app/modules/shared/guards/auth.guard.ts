@@ -3,7 +3,7 @@ import { ActivatedRouteSnapshot, CanActivateChildFn, Router, RouterStateSnapshot
 import { StateManagerService } from '@shared/services/state-manager.service';
 import { map } from 'rxjs';
 
-export const authGuard: CanActivateChildFn = (route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => {
+export const authGuard: CanActivateChildFn = (_route: ActivatedRouteSnapshot, _state: RouterStateSnapshot) => {
   const stateManagerService = inject(StateManagerService);
   const router = inject(Router);
 
