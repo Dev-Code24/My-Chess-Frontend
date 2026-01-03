@@ -6,7 +6,6 @@ import { DialogComponent } from "@shared/components/dialog/dialog.component";
   selector: 'app-promotion-dialog',
   imports: [DialogComponent],
   templateUrl: './promotion-dialog.component.html',
-  styleUrl: './promotion-dialog.component.scss'
 })
 export class PromotionDialogComponent {
   // TODO: Take move as input instead of pawn to be promoted
