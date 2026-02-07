@@ -16,4 +16,5 @@ export interface RoomDetails {
   lastActivity: Date;
   roomStatus: string;
   gameStatus: string;
+  moveSequence: number;
 }

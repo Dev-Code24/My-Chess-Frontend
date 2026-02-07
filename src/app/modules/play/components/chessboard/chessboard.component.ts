@@ -1,5 +1,5 @@
 import { Component, computed, effect, ElementRef, inject, input, OnDestroy, output, signal, viewChild } from '@angular/core';
-import { Piece, PieceColor, MoveDetails, Move, PieceDetails, CapturedPieceDetails } from './../../@interfaces';
+import { Piece, PieceColor, MoveDetails, Move, PieceDetails, CapturedPieceDetails, ChessboardMove } from './../../@interfaces';
 import { AvatarComponent } from "@shared/components/avatar/avatar.component";
 import { UserDetails } from '@shared/@interface';
 import { validateMove, getCapturedPiecesOfAColor, parseFen } from '../../@utils';
@@ -23,7 +23,7 @@ export class ChessboardComponent implements OnDestroy {
   public readonly chessboardFen = input.required<string>();
   public readonly capturedPieces = input.required<string>()
   public readonly winner = input.required<PieceColor | null>();
-  public move = output<Move>();
+  public move = output<ChessboardMove>();
 
   protected myColor = computed<PieceColor>(() => this.whoIsBlackPlayer() === 'me' ? 'b' : 'w');
   protected pieces = signal<PieceDetails[]>([]);

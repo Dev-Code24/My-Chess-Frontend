@@ -3,7 +3,7 @@ import { Component, inject, input, OnDestroy, OnInit, signal } from '@angular/co
 import {ApiError, RoomDetails, UserDetails, UserInterface} from '@shared/@interface';
 import { SubSink } from '@shared/@utils/Subsink';
 import { PlayConnectBackendService } from '../../service/play-connect-backend.service';
-import { RoomDetailsApiResponse, Move, PieceColor, LiveRoomInfo } from '../../@interfaces';
+import { RoomDetailsApiResponse, Move, PieceColor, LiveRoomInfo, ChessboardMove } from '../../@interfaces';
 import { StateManagerService } from '@shared/services';
 import { ChessboardComponent } from '../chessboard/chessboard.component';
 import { LoaderDialogComponent } from "@shared/components/loader";
@@ -28,6 +28,8 @@ export class PlayComponent implements OnInit, OnDestroy {
   protected winner = signal<PieceColor | null>(null);
   protected dialogMessage = signal<MESSAGES>(MESSAGES.WAITING_FOR_OPPONENT);
 
+  private currentMoveSequence = signal<number>(0);
+
   private readonly subsink = new SubSink();
   private readonly stateManagerService = inject(StateManagerService);
   private readonly messageService = inject(MyChessMessageService);
@@ -48,8 +50,9 @@ export class PlayComponent implements OnInit, OnDestroy {
     this.subsink.unsubscribeAll();
   }
 
-  protected onPieceMoved(move: Move): void {
-    this.connectBackend.postPieceMoves(this.roomId(), move);
+  protected onPieceMoved(move: ChessboardMove): void {
+    const payload: Move = { ...JSON.parse(JSON.stringify(move)), expectedMoveSequence: this.currentMoveSequence() };
+    this.connectBackend.postPieceMoves(this.roomId(), payload);
   }
 
   private loadRoomAndConnectWebSocket(): void {
@@ -68,6 +71,8 @@ export class PlayComponent implements OnInit, OnDestroy {
           this.assignWinner(data.gameStatus);
           this.chessboardFen.set(data.fen);
           this.capturedPieces.set(data.capturedPieces);
+
+          this.currentMoveSequence.set(data.moveSequence || 0);
 
           const whoIsBlack = this.whoIsBlackPlayer();
 
@@ -132,6 +137,10 @@ export class PlayComponent implements OnInit, OnDestroy {
 
     if (isOpponentMove) {
       this.opponentsMove.set(move);
+    }
+
+    if (response.moveSequence !== undefined) {
+      this.currentMoveSequence.set(response.moveSequence);
     }
 
     this.stateManagerService.updateIsMyTurn(isMyTurn(response.fen, myColor));
