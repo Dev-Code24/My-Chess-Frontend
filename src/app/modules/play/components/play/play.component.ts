@@ -3,13 +3,13 @@ import { Component, inject, input, OnDestroy, OnInit, signal } from '@angular/co
 import {ApiError, RoomDetails, UserDetails, UserInterface} from '@shared/@interface';
 import { SubSink } from '@shared/@utils/Subsink';
 import { PlayConnectBackendService } from '../../service/play-connect-backend.service';
-import { RoomDetailsApiResponse, Move, PieceColor, LiveRoomInfo, ChessboardMove } from '../../@interfaces';
+import { WebSocketErrorResponse, RoomDetailsApiResponse, Move, PieceColor, LiveRoomInfo, ChessboardMove } from '../../@interfaces';
 import { StateManagerService } from '@shared/services';
 import { ChessboardComponent } from '../chessboard/chessboard.component';
 import { LoaderDialogComponent } from "@shared/components/loader";
 import { MyChessMessageService } from '@shared/services';
 import { isMyTurn } from '../../@utils';
-import { ERROR_MESSAGES, MESSAGES } from '@shared/@utils';
+import { ERROR_MESSAGES, MESSAGES, WEBSOCKET_ERROR_TYPES } from '@shared/@utils';
 
 @Component({
   selector: 'app-play',
@@ -27,8 +27,10 @@ export class PlayComponent implements OnInit, OnDestroy {
   protected capturedPieces = signal<string | undefined>(undefined);
   protected winner = signal<PieceColor | null>(null);
   protected dialogMessage = signal<MESSAGES>(MESSAGES.WAITING_FOR_OPPONENT);
+  protected shouldRevertMove = signal<boolean>(false);
 
   private currentMoveSequence = signal<number>(0);
+  private lastSentMove = signal<ChessboardMove | null>(null);
 
   private readonly subsink = new SubSink();
   private readonly stateManagerService = inject(StateManagerService);
@@ -51,6 +53,8 @@ export class PlayComponent implements OnInit, OnDestroy {
   }
 
   protected onPieceMoved(move: ChessboardMove): void {
+    this.lastSentMove.set(move);
+    this.shouldRevertMove.set(false);
     const payload: Move = { ...JSON.parse(JSON.stringify(move)), expectedMoveSequence: this.currentMoveSequence() };
     this.connectBackend.postPieceMoves(this.roomId(), payload);
   }
@@ -96,7 +100,23 @@ export class PlayComponent implements OnInit, OnDestroy {
       next: (response) => this.listenToRoomUpdates(response),
       error: () => this.messageService.showError(ERROR_MESSAGES.WEBSOCKET_DISCONNECTED_ABRUPTLY),
     });
+
+    this.subsink.sink = this.connectBackend.subscribeToErrors().subscribe({
+      next: (error) => this.handleWebSocketError(error),
+      error: () => this.messageService.showError(ERROR_MESSAGES.WEBSOCKET_ERROR_SUBSCRIPTION_FAILED)
+    });
+
     this.connectBackend.joinRoom(this.roomId());
+  }
+
+  private handleWebSocketError(error: WebSocketErrorResponse): void {
+    this.messageService.showError(error.message);
+
+    if (error.type === WEBSOCKET_ERROR_TYPES.SYSTEM_OVERLOAD ||
+        error.type === WEBSOCKET_ERROR_TYPES.MOVE_NOT_ALLOWED ||
+        error.type === WEBSOCKET_ERROR_TYPES.STALE_MOVE) {
+      this.shouldRevertMove.set(true);
+    }
   }
 
   private listenToRoomUpdates(response: string | RoomDetails | LiveRoomInfo): void {

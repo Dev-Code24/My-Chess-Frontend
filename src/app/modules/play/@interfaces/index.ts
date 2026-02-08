@@ -50,5 +50,14 @@ export interface LiveRoomInfo {
   moveSequence: number;
 }
 
+export interface WebSocketErrorResponse {
+  timestamp: string;
+  error?: string;
+  message: string;
+  status: number;
+  type: string;
+}
+
 export interface RoomDetailsApiResponseAttribute extends RoomDetails { }
 export interface RoomDetailsApiResponse extends BasicApiResponse<RoomDetailsApiResponseAttribute> { }
+

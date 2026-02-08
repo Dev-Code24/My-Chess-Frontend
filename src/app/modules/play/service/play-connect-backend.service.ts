@@ -2,7 +2,7 @@ import { inject, Injectable } from '@angular/core';
 import { RoomDetails } from '@shared/@interface';
 import { CommonConnectBackendService } from '@shared/services';
 import { Observable } from 'rxjs';
-import { LiveRoomInfo, Move, RoomDetailsApiResponse } from '../@interfaces';
+import { WebSocketErrorResponse, LiveRoomInfo, Move, RoomDetailsApiResponse } from '../@interfaces';
 import { LeaveRoomApiPayload } from '../../home/@interface';
 
 @Injectable({
@@ -17,6 +17,10 @@ export class PlayConnectBackendService {
 
   public subscribeToRoom(code: string): Observable<RoomDetails | LiveRoomInfo | string> {
     return this.commonConnectBackend.wsSubscribe<RoomDetails | LiveRoomInfo | string>(`/room.${code}`);
+  }
+
+  public subscribeToErrors(): Observable<WebSocketErrorResponse> {
+    return this.commonConnectBackend.wsSubscribe<WebSocketErrorResponse>('/user/queue/errors');
   }
 
   public postPieceMoves(code: string, pieceMoved: Move): void {
