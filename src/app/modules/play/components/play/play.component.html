@@ -18,7 +18,8 @@
       (move)="onPieceMoved($event)"
       [chessboardFen]="fen"
       [capturedPieces]="capturedPiecesNotation"
-      [winner]="winner()" />
+      [winner]="winner()"
+      [shouldRevertMove]="shouldRevertMove()" />
   </div>
 } @else {
   <mc-loaderDialog [message]="dialogMessage()"/>

@@ -39,12 +39,25 @@ export interface Move {
   piece: Piece,
   moveDetails: MoveDetails;
   to: { row: number, col: number };
+  expectedMoveSequence: number;
 }
+
+export type ChessboardMove = Omit<Move, 'expectedMoveSequence'>;
 
 export interface LiveRoomInfo {
   move: Move;
   fen: string;
+  moveSequence: number;
+}
+
+export interface WebSocketErrorResponse {
+  timestamp: string;
+  error?: string;
+  message: string;
+  status: number;
+  type: string;
 }
 
 export interface RoomDetailsApiResponseAttribute extends RoomDetails { }
 export interface RoomDetailsApiResponse extends BasicApiResponse<RoomDetailsApiResponseAttribute> { }
+

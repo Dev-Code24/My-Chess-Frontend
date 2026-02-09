@@ -1,5 +1,5 @@
 import { Component, computed, effect, ElementRef, inject, input, OnDestroy, output, signal, viewChild } from '@angular/core';
-import { Piece, PieceColor, MoveDetails, Move, PieceDetails, CapturedPieceDetails } from './../../@interfaces';
+import { Piece, PieceColor, MoveDetails, Move, PieceDetails, CapturedPieceDetails, ChessboardMove } from './../../@interfaces';
 import { AvatarComponent } from "@shared/components/avatar/avatar.component";
 import { UserDetails } from '@shared/@interface';
 import { validateMove, getCapturedPiecesOfAColor, parseFen } from '../../@utils';
@@ -23,7 +23,8 @@ export class ChessboardComponent implements OnDestroy {
   public readonly chessboardFen = input.required<string>();
   public readonly capturedPieces = input.required<string>()
   public readonly winner = input.required<PieceColor | null>();
-  public move = output<Move>();
+  public readonly shouldRevertMove = input.required<boolean>();
+  public move = output<ChessboardMove>();
 
   protected myColor = computed<PieceColor>(() => this.whoIsBlackPlayer() === 'me' ? 'b' : 'w');
   protected pieces = signal<PieceDetails[]>([]);
@@ -80,6 +81,13 @@ export class ChessboardComponent implements OnDestroy {
 
     this.subsink.sink = this.stateManagerService.myTurn$.subscribe((isMyTurn) => {
       this.isMyTurn.set(isMyTurn);
+    });
+
+    effect(() => {
+      const shouldRevert = this.shouldRevertMove();
+      if (shouldRevert) {
+        this.revertToCurrentFen();
+      }
     });
   }
 
@@ -296,6 +304,21 @@ export class ChessboardComponent implements OnDestroy {
       this.pawnToBePromoted.set(pawnWaitingForPromotion);
       this.isPromotionDialogVisible.set(true);
     }
+  }
+
+  private revertToCurrentFen(): void {
+    const boardOrientation = this.whoIsBlackPlayer() === 'me' ? 'flip' : 'normal';
+    const pieces = parseFen(this.chessboardFen(), boardOrientation);
+
+    const arrangedPieces = boardOrientation === 'normal'
+        ? [...pieces.w, ...pieces.b]
+        : [...pieces.b, ...pieces.w];
+
+    this.pieces.set(arrangedPieces);
+
+    const opponentsColor = this.myColor() === 'b' ? 'w' : 'b';
+    this.capturedPiecesByMe.set(getCapturedPiecesOfAColor(opponentsColor, this.capturedPieces()));
+    this.capturedPiecesByOpponent.set(getCapturedPiecesOfAColor(this.myColor(), this.capturedPieces()));
   }
 
   private updatePiece(

@@ -28,6 +28,14 @@ export enum ERROR_MESSAGES {
   DISCONNECTED_FROM_SERVER = 'Disconnected from the server.',
   FAILED_LEAVING_ROOM = 'Failed to leave room.',
   COULD_NOT_LOG_OUT = 'Could not logout. Try Again.',
+  WEBSOCKET_ERROR_SUBSCRIPTION_FAILED = 'Error subscription failed. Please reload.',
+}
+
+export enum WEBSOCKET_ERROR_TYPES {
+  SYSTEM_OVERLOAD = 'SYSTEM_OVERLOAD',
+  MOVE_NOT_ALLOWED = 'MOVE_NOT_ALLOWED',
+  STALE_MOVE = 'STALE_MOVE',
+  INTERNAL_ERROR = 'INTERNAL_ERROR',
 }
 
 export enum MESSAGES {
